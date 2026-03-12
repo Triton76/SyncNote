@@ -1,0 +1,9 @@
+// VS Code settings.json
+{
+    "files.associations": {
+        "*.proto": "proto3"
+    },
+    "protoc": {
+        "path": "/usr/local/bin/protoc"  // protoc 编译器路径
+    }
+}

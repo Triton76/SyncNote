@@ -1,0 +1,39 @@
+
+SyncNote/
+├── api/                    # API 服务
+│   ├── etc/
+│   │   └── syncnote-api.yaml
+│   ├── internal/
+│   │   ├── config/
+│   │   ├── handler/        # HTTP 处理器
+│   │   ├── logic/          # 业务逻辑
+│   │   ├── svc/            # 服务上下文
+│   │   └── types/          # 数据类型定义
+│   └── syncnote.go
+├── rpc/                    # RPC 服务
+│   ├── etc/
+│   │   └── syncnote-rpc.yaml
+│   ├── internal/
+│   │   ├── config/
+│   │   ├── server/         # RPC 服务器
+│   │   ├── svc/
+│   │   └── types/
+│   └── syncnote.go
+├── internal/               # 项目内部共享代码
+│   ├── config/             # 共享配置定义
+│   ├── model/              # 数据模型
+│   ├── store/              # 数据访问抽象
+│   └── middleware/         # 中间件
+├── pkg/                    # 可复用的公共包
+│   ├── common/
+│   ├── utils/
+│   └── crypto/
+├── proto/                  # protobuf 定义
+│   └── syncnote.proto
+├── scripts/                # 脚本文件
+│   ├── build.sh
+│   └── deploy.sh
+├── docs/                   # 文档
+├── go.mod
+├── go.sum
+└── Makefile

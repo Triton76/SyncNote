@@ -1,0 +1,5 @@
+# model.yaml
+dataSource: root:password@tcp(localhost:3306)/syncnote
+table: "notes"
+dir: "./internal/model"
+style: gozero

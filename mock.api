@@ -1,0 +1,48 @@
+syntax = "v1";
+
+type NoteReq {
+    id string `json:"id"`
+    content_type string `json:"contentType"`
+}
+
+type NoteResp {
+    id string `json:"id"`
+    title string `json:"title"`
+    content string `json:"content"`
+    content_type string `json:"contentType"`
+    timestamp int64 `json:"timestamp"`
+    last_modified int64 `json:"lastModified"`
+}
+
+type CreateNoteReq {
+    user_id string `json:"userId"`
+    title string `json:"title"`
+    content string `json:"content"`
+    content_type string `json:"contentType"`
+}
+
+type NoteChangeReq {
+    note_id string `json:"noteId"`
+    user_id string `json:"userId"`
+    section_id string `json:"sectionId,optional"`
+    operations []EditOperation `json:"operations"`
+    timestamp int64 `json:"timestamp"`
+}
+
+type EditOperation {
+    op_type string `json:"opType"`
+    start int32 `json:"start"`
+    end int32 `json:"end"`
+    content string `json:"content"`
+}
+
+type SyncResponse {
+    success bool `json:"success"`
+    message string `json:"message"`
+    timestamp int64 `json:"timestamp"`
+    merged_content string `json:"mergedContent,optional"`
+}
+
+service SyncNote {
+    
+}
