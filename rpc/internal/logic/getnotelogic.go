@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 
 	"SyncNote/rpc/internal/svc"
 	"SyncNote/rpc/pb/syncnoterpc"
@@ -24,7 +25,14 @@ func NewGetNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetNoteLo
 }
 
 func (l *GetNoteLogic) GetNote(in *syncnoterpc.NoteReq) (*syncnoterpc.NoteResp, error) {
-	// todo: add your logic here and delete this line
+	if in.GetNoteId() == "" {
+		return nil, errors.New("noteId is required")
+	}
 
-	return &syncnoterpc.NoteResp{}, nil
+	note, err := l.svcCtx.NoteStore.GetNoteByID(l.ctx, in.GetNoteId())
+	if err != nil {
+		return nil, err
+	}
+
+	return toNoteResp(note), nil
 }

@@ -23,8 +23,27 @@ func NewSaveNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SaveNote
 	}
 }
 
-func (l *SaveNoteLogic) SaveNote(in *syncnoterpc.NoteReq) (*syncnoterpc.NoteResp, error) {
-	// todo: add your logic here and delete this line
+func (l *SaveNoteLogic) SaveNote(in *syncnoterpc.SaveNoteReq) (*syncnoterpc.SaveNoteResp, error) {
+	if in.GetNoteId() == "" {
+		return invalidParamSaveResp("noteId is required"), nil
+	}
+	if in.GetUserId() == "" {
+		return invalidParamSaveResp("userId is required"), nil
+	}
+	if in.GetExpectedVersion() <= 0 {
+		return invalidParamSaveResp("expectedVersion must be greater than 0"), nil
+	}
 
-	return &syncnoterpc.NoteResp{}, nil
+	result, err := l.svcCtx.NoteStore.SaveNote(
+		l.ctx,
+		in.GetNoteId(),
+		in.GetUserId(),
+		in.GetContent(),
+		in.GetExpectedVersion(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return toSaveNoteResp(result), nil
 }

@@ -4,53 +4,51 @@
 package types
 
 type CreateNoteReq struct {
-	User_id      string `json:"userId"`
-	Title        string `json:"title"`
-	Content      string `json:"content"`     // 初始内容
-	Content_type string `json:"contentType"` // 默认"text"
-}
-
-type EditOperation struct {
-	Op_type string `json:"opType"`  // "insert", "delete", "replace"
-	Start   int32  `json:"start"`   // 操作起始位置
-	End     int32  `json:"end"`     // 操作结束位置
-	Content string `json:"content"` // 操作内容（文本或序列化数据）
-}
-
-type NoteChangeReq struct {
-	Note_id    string          `json:"noteId"`
-	User_id    string          `json:"userId"`
-	Section_id string          `json:"sectionId,optional"` // 可选：用于多节笔记（如章节）
-	Operations []EditOperation `json:"operations"`         // 编辑操作列表
-	Timestamp  int64           `json:"timestamp"`          // 操作时间戳（用于冲突解决）
+	UserId  string
+	Title   string
+	Content string `json:"content,optional"`
 }
 
 type NoteReq struct {
-	Id           string `json:"id"`          // 笔记ID
-	Content_type string `json:"contentType"` // 内容类型（"text", "graphic"等，预留扩展）
+	NoteId string
 }
 
 type NoteResp struct {
-	Id            string `json:"id"`
-	User_id       string `json:"userId"`
-	Title         string `json:"title"`
-	Content       string `json:"content"`      // 当前内容（文本或序列化内容）
-	Content_type  string `json:"contentType"`  // 内容类型（"text", "graphic"等）
-	Timestamp     int64  `json:"timestamp"`    // 创建时间戳
-	Last_modified int64  `json:"lastModified"` // 最后修改时间戳
+	NoteId       string
+	UserId       string
+	Title        string
+	Content      string
+	Version      int64
+	LastModified int64
 }
 
-type SyncResponse struct {
-	Success        bool   `json:"success"`
-	Message        string `json:"message"`
-	Timestamp      int64  `json:"timestamp"`              // 服务器时间戳
-	Merged_content string `json:"mergedContent,optional"` // 合并后的内容（可选）
+type NoteSummary struct {
+	NoteId       string
+	Title        string
+	Version      int64
+	LastModified int64
+}
+
+type SaveNoteReq struct {
+	NoteId          string
+	UserId          string
+	Content         string
+	ExpectedVersion int64
+}
+
+type SaveNoteResp struct {
+	Success       bool
+	Code          string
+	Message       string
+	Note          *NoteResp `json:"note,optional"`
+	LatestVersion int64     `json:"latestVersion,optional"`
+	LatestContent string    `json:"latestContent,optional"`
 }
 
 type UserNotesReq struct {
-	User_id string `json:"userId"`
+	UserId string
 }
 
 type UserNotesResp struct {
-	Notes []NoteResp `json:"notes"`
+	Notes []NoteSummary
 }

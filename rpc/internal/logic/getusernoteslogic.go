@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"errors"
 
 	"SyncNote/rpc/internal/svc"
 	"SyncNote/rpc/pb/syncnoterpc"
@@ -24,7 +25,19 @@ func NewGetUserNotesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetU
 }
 
 func (l *GetUserNotesLogic) GetUserNotes(in *syncnoterpc.UserNotesReq) (*syncnoterpc.UserNotesResp, error) {
-	// todo: add your logic here and delete this line
+	if in.GetUserId() == "" {
+		return nil, errors.New("userId is required")
+	}
 
-	return &syncnoterpc.UserNotesResp{}, nil
+	notes, err := l.svcCtx.NoteStore.GetNotesByUserID(l.ctx, in.GetUserId())
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]*syncnoterpc.NoteSummary, 0, len(notes))
+	for _, note := range notes {
+		items = append(items, toNoteSummary(note))
+	}
+
+	return &syncnoterpc.UserNotesResp{Notes: items}, nil
 }

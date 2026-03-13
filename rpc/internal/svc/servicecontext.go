@@ -1,13 +1,18 @@
 package svc
 
-import "SyncNote/rpc/internal/config"
+import (
+	"SyncNote/model"
+	"SyncNote/rpc/internal/config"
+)
 
 type ServiceContext struct {
-	Config config.Config
+	Config    config.Config
+	NoteStore model.NoteStore
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
-		Config: c,
+		Config:    c,
+		NoteStore: model.NewMockNoteStore(),
 	}
 }

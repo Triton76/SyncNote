@@ -5,14 +5,19 @@ package svc
 
 import (
 	"SyncNote/api/internal/config"
+	"SyncNote/rpc/syncnoterpcclient"
+
+	"github.com/zeromicro/go-zero/zrpc"
 )
 
 type ServiceContext struct {
-	Config config.Config
+	Config      config.Config
+	SyncNoteRpc syncnoterpcclient.Syncnoterpc
 }
 
 func NewServiceContext(c config.Config) *ServiceContext {
 	return &ServiceContext{
-		Config: c,
+		Config:      c,
+		SyncNoteRpc: syncnoterpcclient.NewSyncnoterpc(zrpc.MustNewClient(c.SyncNoteRpc)),
 	}
 }

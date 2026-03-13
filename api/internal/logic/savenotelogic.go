@@ -26,7 +26,7 @@ func NewSaveNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SaveNote
 	}
 }
 
-func (l *SaveNoteLogic) SaveNote(req *types.NoteReq) (resp *types.NoteResp, err error) {
+func (l *SaveNoteLogic) SaveNote(req *types.SaveNoteReq) (resp *types.SaveNoteResp, err error) {
 	// todo: add your logic here and delete this line
 
 	return

@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.1
 // - protoc             v3.19.4
-// source: SyncNote.proto
+// source: syncNoterpc.proto
 
 package syncnoterpc
 
@@ -19,23 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Syncnoterpc_CreateNote_FullMethodName     = "/syncnoterpc.Syncnoterpc/CreateNote"
-	Syncnoterpc_GetNote_FullMethodName        = "/syncnoterpc.Syncnoterpc/GetNote"
-	Syncnoterpc_SyncNoteChange_FullMethodName = "/syncnoterpc.Syncnoterpc/SyncNoteChange"
-	Syncnoterpc_SaveNote_FullMethodName       = "/syncnoterpc.Syncnoterpc/SaveNote"
-	Syncnoterpc_GetUserNotes_FullMethodName   = "/syncnoterpc.Syncnoterpc/GetUserNotes"
+	Syncnoterpc_CreateNote_FullMethodName   = "/syncnoterpc.Syncnoterpc/CreateNote"
+	Syncnoterpc_GetNote_FullMethodName      = "/syncnoterpc.Syncnoterpc/GetNote"
+	Syncnoterpc_SaveNote_FullMethodName     = "/syncnoterpc.Syncnoterpc/SaveNote"
+	Syncnoterpc_GetUserNotes_FullMethodName = "/syncnoterpc.Syncnoterpc/GetUserNotes"
 )
 
 // SyncnoterpcClient is the client API for Syncnoterpc service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// 服务定义
 type SyncnoterpcClient interface {
 	CreateNote(ctx context.Context, in *CreateNoteReq, opts ...grpc.CallOption) (*NoteResp, error)
 	GetNote(ctx context.Context, in *NoteReq, opts ...grpc.CallOption) (*NoteResp, error)
-	SyncNoteChange(ctx context.Context, in *NoteChangeReq, opts ...grpc.CallOption) (*SyncResponse, error)
-	SaveNote(ctx context.Context, in *NoteReq, opts ...grpc.CallOption) (*NoteResp, error)
+	SaveNote(ctx context.Context, in *SaveNoteReq, opts ...grpc.CallOption) (*SaveNoteResp, error)
 	GetUserNotes(ctx context.Context, in *UserNotesReq, opts ...grpc.CallOption) (*UserNotesResp, error)
 }
 
@@ -67,19 +63,9 @@ func (c *syncnoterpcClient) GetNote(ctx context.Context, in *NoteReq, opts ...gr
 	return out, nil
 }
 
-func (c *syncnoterpcClient) SyncNoteChange(ctx context.Context, in *NoteChangeReq, opts ...grpc.CallOption) (*SyncResponse, error) {
+func (c *syncnoterpcClient) SaveNote(ctx context.Context, in *SaveNoteReq, opts ...grpc.CallOption) (*SaveNoteResp, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(SyncResponse)
-	err := c.cc.Invoke(ctx, Syncnoterpc_SyncNoteChange_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *syncnoterpcClient) SaveNote(ctx context.Context, in *NoteReq, opts ...grpc.CallOption) (*NoteResp, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(NoteResp)
+	out := new(SaveNoteResp)
 	err := c.cc.Invoke(ctx, Syncnoterpc_SaveNote_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
@@ -100,13 +86,10 @@ func (c *syncnoterpcClient) GetUserNotes(ctx context.Context, in *UserNotesReq, 
 // SyncnoterpcServer is the server API for Syncnoterpc service.
 // All implementations must embed UnimplementedSyncnoterpcServer
 // for forward compatibility.
-//
-// 服务定义
 type SyncnoterpcServer interface {
 	CreateNote(context.Context, *CreateNoteReq) (*NoteResp, error)
 	GetNote(context.Context, *NoteReq) (*NoteResp, error)
-	SyncNoteChange(context.Context, *NoteChangeReq) (*SyncResponse, error)
-	SaveNote(context.Context, *NoteReq) (*NoteResp, error)
+	SaveNote(context.Context, *SaveNoteReq) (*SaveNoteResp, error)
 	GetUserNotes(context.Context, *UserNotesReq) (*UserNotesResp, error)
 	mustEmbedUnimplementedSyncnoterpcServer()
 }
@@ -124,10 +107,7 @@ func (UnimplementedSyncnoterpcServer) CreateNote(context.Context, *CreateNoteReq
 func (UnimplementedSyncnoterpcServer) GetNote(context.Context, *NoteReq) (*NoteResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetNote not implemented")
 }
-func (UnimplementedSyncnoterpcServer) SyncNoteChange(context.Context, *NoteChangeReq) (*SyncResponse, error) {
-	return nil, status.Error(codes.Unimplemented, "method SyncNoteChange not implemented")
-}
-func (UnimplementedSyncnoterpcServer) SaveNote(context.Context, *NoteReq) (*NoteResp, error) {
+func (UnimplementedSyncnoterpcServer) SaveNote(context.Context, *SaveNoteReq) (*SaveNoteResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method SaveNote not implemented")
 }
 func (UnimplementedSyncnoterpcServer) GetUserNotes(context.Context, *UserNotesReq) (*UserNotesResp, error) {
@@ -190,26 +170,8 @@ func _Syncnoterpc_GetNote_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Syncnoterpc_SyncNoteChange_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NoteChangeReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SyncnoterpcServer).SyncNoteChange(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Syncnoterpc_SyncNoteChange_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SyncnoterpcServer).SyncNoteChange(ctx, req.(*NoteChangeReq))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Syncnoterpc_SaveNote_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(NoteReq)
+	in := new(SaveNoteReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -221,7 +183,7 @@ func _Syncnoterpc_SaveNote_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: Syncnoterpc_SaveNote_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SyncnoterpcServer).SaveNote(ctx, req.(*NoteReq))
+		return srv.(SyncnoterpcServer).SaveNote(ctx, req.(*SaveNoteReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -260,10 +222,6 @@ var Syncnoterpc_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Syncnoterpc_GetNote_Handler,
 		},
 		{
-			MethodName: "SyncNoteChange",
-			Handler:    _Syncnoterpc_SyncNoteChange_Handler,
-		},
-		{
 			MethodName: "SaveNote",
 			Handler:    _Syncnoterpc_SaveNote_Handler,
 		},
@@ -273,5 +231,5 @@ var Syncnoterpc_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "SyncNote.proto",
+	Metadata: "syncNoterpc.proto",
 }

@@ -16,7 +16,7 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 		[]rest.Route{
 			{
 				Method:  http.MethodGet,
-				Path:    "/api/note/:id",
+				Path:    "/api/note/:noteId",
 				Handler: GetNoteHandler(serverCtx),
 			},
 			{
@@ -30,13 +30,8 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: SaveNoteHandler(serverCtx),
 			},
 			{
-				Method:  http.MethodPost,
-				Path:    "/api/note/sync",
-				Handler: SyncNoteChangeHandler(serverCtx),
-			},
-			{
 				Method:  http.MethodGet,
-				Path:    "/api/user/:user_id/notes",
+				Path:    "/api/user/:userId/notes",
 				Handler: GetUserNotesHandler(serverCtx),
 			},
 		},
