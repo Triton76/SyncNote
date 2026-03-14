@@ -1,0 +1,26 @@
+syntax = "v1"
+
+type LoginReq {
+    LoginId string `json:"loginId"`
+    Password string `json:"password"`
+}
+
+type RegisterReq {
+    Email string `json:"email"`
+    Captcha string `json:"captcha"`
+    Password string `json:"password"`
+    Username string `json:"username,optional"`
+}
+
+type LoginResp {
+    UserId string `json:"userId"`
+    Token string `json:"token"`
+    Expire int64 `json:"expire"`
+}
+
+service auth-api {
+    @handler LoginHandler
+    post /auth/login (LoginReq) returns (LoginResp)
+    @handler RegisterHandler
+    post /auth/register (RegisterReq) returns (LoginResp)
+}
