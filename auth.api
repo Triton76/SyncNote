@@ -1,0 +1,27 @@
+// api/auth/auth.api
+syntax = "v1"
+
+type LoginReq {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type RegisterReq {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Nickname string `json:"nickname,optional"`
+}
+
+type AuthResp {
+	UserId string `json:"userId"`
+	Token  string `json:"token"`      // JWT token
+	Expire int64  `json:"expire"`     // 过期时间戳
+}
+
+service auth-api {
+	@handler LoginHandler
+	post /auth/login (LoginReq) returns (AuthResp)
+
+	@handler RegisterHandler
+	post /auth/register (RegisterReq) returns (AuthResp)
+}

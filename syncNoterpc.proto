@@ -1,69 +1,68 @@
 syntax = "proto3";
 
 package syncnoterpc;
+
 option go_package = "./syncnoterpc";
 
-enum SaveCode {
-    SAVE_CODE_UNSPECIFIED = 0;
-    SAVE_CODE_OK = 1;
-    SAVE_CODE_VERSION_CONFLICT = 2;
-    SAVE_CODE_NOT_FOUND = 3;
-    SAVE_CODE_INVALID_PARAM = 4;
-}
+// ======================
+// 消息定义
+// ======================
 
 message CreateNoteReq {
-    string user_id = 1 [json_name = "userId"];
-    string title = 2;
-    string content = 3;
+  string user_id = 1 [json_name = "userId"];
+  string title = 2;
 }
 
 message NoteReq {
-    string note_id = 1 [json_name = "noteId"];
+  string note_id = 1 [json_name = "noteId"];
 }
 
-message SaveNoteReq {
-    string note_id = 1 [json_name = "noteId"];
-    string user_id = 2 [json_name = "userId"];
-    string content = 3;
-    int64 expected_version = 4 [json_name = "expectedVersion"];
+message ApplyOpsReq {
+  string note_id = 1 [json_name = "noteId"];
+  string user_id = 2 [json_name = "userId"];
+  repeated Operation ops = 3;
+}
+
+message Operation {
+  string type = 1 [json_name = "type"];           // "insert" or "delete"
+  string pos = 2 [json_name = "pos", optional];   // delete 时必需
+  string char = 3 [json_name = "char", optional]; // insert 时必需（单字符）
 }
 
 message NoteResp {
-    string note_id = 1 [json_name = "noteId"];
-    string user_id = 2 [json_name = "userId"];
-    string title = 3;
-    string content = 4;
-    int64 version = 5;
-    int64 last_modified = 6 [json_name = "lastModified"];
+  string note_id = 1 [json_name = "noteId"];
+  string user_id = 2 [json_name = "userId"];
+  string title = 3;
+  string content = 4;
+  int64 last_modified = 5 [json_name = "lastModified"];
 }
 
 message NoteSummary {
-    string note_id = 1 [json_name = "noteId"];
-    string title = 2;
-    int64 version = 3;
-    int64 last_modified = 4 [json_name = "lastModified"];
+  string note_id = 1 [json_name = "noteId"];
+  string title = 2;
+  int64 last_modified = 3 [json_name = "lastModified"];
 }
 
 message UserNotesReq {
-    string user_id = 1 [json_name = "userId"];
+  string user_id = 1 [json_name = "userId"];
 }
 
 message UserNotesResp {
-    repeated NoteSummary notes = 1;
+  repeated NoteSummary notes = 1;
 }
 
-message SaveNoteResp {
-    bool success = 1;
-    SaveCode code = 2;
-    string message = 3;
-    NoteResp note = 4;
-    int64 latest_version = 5 [json_name = "latestVersion"];
-    string latest_content = 6 [json_name = "latestContent"];
+message ApplyOpsResp {
+  bool success = 1;
+  string message = 2;
 }
+
+// ======================
+// 服务定义
+// ======================
 
 service Syncnoterpc {
-    rpc CreateNote(CreateNoteReq) returns (NoteResp);
-    rpc GetNote(NoteReq) returns (NoteResp);
-    rpc SaveNote(SaveNoteReq) returns (SaveNoteResp);
-    rpc GetUserNotes(UserNotesReq) returns (UserNotesResp);
+  rpc CreateNote(CreateNoteReq) returns (NoteResp);
+  rpc GetNote(NoteReq) returns (NoteResp);
+  rpc ApplyOps(ApplyOpsReq) returns (ApplyOpsResp);
+  rpc GetUserNotes(UserNotesReq) returns (UserNotesResp);
 }
