@@ -4,13 +4,13 @@
 package types
 
 type CreateNoteReq struct {
-	UserId  string
-	Title   string
-	Content string `json:"content,optional"`
+	UserId  string `json:"userId"`
+	Title   string `json:"title"`
+	Content string `json:"content,omitempty"`
 }
 
 type NoteReq struct {
-	NoteId string
+	NoteId string `path:"noteId"`
 }
 
 type NoteResp struct {
@@ -30,23 +30,23 @@ type NoteSummary struct {
 }
 
 type SaveNoteReq struct {
-	NoteId          string
-	UserId          string
-	Content         string
-	ExpectedVersion int64
+	NoteId          string `json:"noteId"`
+	UserId          string `json:"userId"`
+	Content         string `json:"content"`
+	ExpectedVersion int64  `json:"expectedVersion"`
 }
 
 type SaveNoteResp struct {
 	Success       bool
 	Code          string
 	Message       string
-	Note          *NoteResp `json:"note,optional"`
-	LatestVersion int64     `json:"latestVersion,optional"`
-	LatestContent string    `json:"latestContent,optional"`
+	Note          *NoteResp `json:"note,omitempty"`
+	LatestVersion int64     `json:"latestVersion,omitempty"`
+	LatestContent string    `json:"latestContent,omitempty"`
 }
 
 type UserNotesReq struct {
-	UserId string
+	UserId string `path:"userId"`
 }
 
 type UserNotesResp struct {

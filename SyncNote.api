@@ -1,20 +1,20 @@
 syntax = "v1"
 
 type CreateNoteReq {
-	userId  string
-	title   string
+	userId  string `json:"userId"`
+	title   string `json:"title"`
 	content string `json:"content,optional"`
 }
 
 type NoteReq {
-	noteId string
+	noteId string `path:"noteId"`
 }
 
 type SaveNoteReq {
-	noteId          string
-	userId          string
-	content         string
-	expectedVersion int64
+	noteId          string `json:"noteId"`
+	userId          string `json:"userId"`
+	content         string `json:"content"`
+	expectedVersion int64  `json:"expectedVersion"`
 }
 
 type NoteResp {
@@ -34,7 +34,7 @@ type NoteSummary {
 }
 
 type UserNotesReq {
-	userId string
+	userId string `path:"userId"`
 }
 
 type UserNotesResp {
