@@ -13,6 +13,14 @@ type RegisterReq {
 }
 
 type LoginResp {
+    Code int64 `json:"code"`
+    UserId string `json:"userId"`
+    Token string `json:"token"`
+    Expire int64 `json:"expire"`
+}
+
+type RegisterResp {
+    Code int64 `json:"code"`
     UserId string `json:"userId"`
     Token string `json:"token"`
     Expire int64 `json:"expire"`
@@ -22,5 +30,5 @@ service auth-api {
     @handler LoginHandler
     post /auth/login (LoginReq) returns (LoginResp)
     @handler RegisterHandler
-    post /auth/register (RegisterReq) returns (LoginResp)
+    post /auth/register (RegisterReq) returns (RegisterResp)
 }
