@@ -1,0 +1,80 @@
+{
+  "name": "SyncNote 开发环境 (Go + MySQL + Docker)",
+  
+  // 使用自定义 Dockerfile
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  
+  // 🔌 端口转发
+  "forwardPorts": [
+    8888,
+    3306,
+    6379
+  ],
+  
+  // 🗄️ 使用 Features 安装 MySQL
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/mysql:1": {
+      "version": "8.0",
+      "rootPassword": "devpass123",
+      "database": "syncnote"
+    },
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  
+  // 📦 VS Code 插件
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "ms-azuretools.vscode-docker",
+        "zxh404.vscode-proto3",
+        "mtxr.sqltools",
+        "esbenp.prettier-vscode",
+        "yoheimuta.protolint"
+      ],
+      "settings": {
+        "go.formatTool": "goimports",
+        "go.lintTool": "golangci-lint",
+        "go.lintOnSave": "workspace",
+        "go.toolsManagement.autoUpdate": true,
+        "go.useLanguageServer": true,
+        "editor.formatOnSave": true,
+        "editor.tabSize": 4,
+        "editor.insertSpaces": false,
+        "files.eol": "\n",
+        "protolint.execPath": "/usr/local/bin/protolint",
+        "protolint.lintRun": "onSave"
+      }
+    }
+  },
+  
+  // 🚀 容器创建后执行的命令
+  "postCreateCommand": "bash .devcontainer/scripts/setup.sh",
+  
+  // 🌐 环境变量
+  "containerEnv": {
+    "GO_ENV": "development",
+    "DB_HOST": "127.0.0.1",
+    "DB_PORT": "3306",
+    "DB_USER": "root",
+    "DB_PASSWORD": "devpass123",
+    "DB_NAME": "syncnote"
+  },
+  
+  // 👤 容器内用户
+  "remoteUser": "vscode",
+  
+  // 📂 挂载配置
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  
+  // 🔄 容器启动后执行的命令（可选）
+  "postStartCommand": "echo '✅ SyncNote 开发环境已就绪！'"
+}

@@ -1,0 +1,306 @@
+# ============================================
+# 🐹 Go 语言通用规则
+# ============================================
+
+# 编译输出
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.app
+
+# Go 构建中间文件
+*.o
+*.a
+*.cgo1.o
+*.cgo2.o
+*_test.cgo1.o
+
+# 测试覆盖率文件
+coverage.out
+coverage.html
+
+# Go Module 缓存（本地开发用，不提交）
+# /go/pkg/
+# /go/src/
+
+# 依赖下载缓存（已包含在 go.sum 中，无需提交源码）
+/vendor/
+
+# go work 相关
+*.work
+*.work.sum
+
+# 临时文件
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 调试输出
+*.log
+*.logs
+logs/
+log/
+
+# 性能分析文件
+*.pprof
+*.trace
+*.prof
+
+# ============================================
+# 🚀 go-zero 框架特有规则
+# ============================================
+
+# goctl 生成的临时文件
+*.tmp.api
+*.tmp.proto
+*.gen.go
+*_gen.go           # ⚠️ 注意：如果自定义了 _gen 文件，请注释此行
+
+# API 描述文件备份
+*.api.bak
+*.proto.bak
+
+# 自动生成的文档（如果需要手动维护可注释）
+/docs/api.md
+/docs/*.md
+
+# go-zero 配置文件备份
+*.yaml.bak
+*.json.bak
+etc/*.local.yaml
+etc/*.local.json
+
+# 本地开发配置（敏感信息）
+!.gitignore
+.env
+.env.local
+.env.*.local
+*.local
+config.local.go
+
+# ============================================
+# 🗄️ 数据库 & 数据文件
+# ============================================
+
+# SQLite 数据库
+*.db
+*.sqlite
+*.sqlite3
+
+# MySQL dump 文件（备份用，不提交）
+*.sql
+!auth/auth.sql     # ✅ 例外：表结构定义文件需要提交
+
+# Redis RDB/AOF 文件
+dump.rdb
+appendonly.aof
+
+# 数据导入导出临时文件
+*.csv
+*.xlsx
+*.xls
+data/
+exports/
+imports/
+
+# ============================================
+# 🐳 Docker & 构建产物
+# ============================================
+
+# Docker 构建中间层
+.docker/
+.dockerignore
+
+# 构建产物
+bin/
+build/
+dist/
+output/
+release/
+
+# Docker 镜像标签文件
+*.tar
+*.tar.gz
+*.zip
+
+# Kubernetes 临时文件
+*.kubeconfig.local
+
+# ============================================
+# 💻 IDE & 编辑器配置
+# ============================================
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json
+
+# GoLand / IntelliJ
+.idea/
+*.iml
+*.iws
+
+# Vim / Neovim
+*.un~
+Session.vim
+.netrwhist
+
+# Emacs
+*~
+\#*\#
+.\#*
+*.elc
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ============================================
+# 🖥️ 系统文件
+# ============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.Trash-*
+.nfs*
+
+# ============================================
+# 🔐 敏感信息 & 密钥（永远不要提交！）
+# ============================================
+
+# 私钥文件
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# 证书
+*.crt
+*.cer
+*.ca-bundle
+
+# 配置文件中的敏感字段（示例）
+# etc/*.yaml 中如果包含密码，建议：
+# 1. 使用环境变量
+# 2. 使用 .env 文件（已忽略）
+# 3. 使用配置中心
+
+# AWS / Cloud 凭证
+.aws/credentials
+.azure/credentials
+.gcp/credentials
+
+# ============================================
+# 🧪 测试相关
+# ============================================
+
+# 测试数据（如果包含敏感信息）
+testdata/*.db
+testdata/*.sql
+test/fixtures/*.json
+
+# Mock 生成文件（如果自动生成）
+mocks/
+*_mock.go
+
+# 测试报告
+test-report/
+junit.xml
+report.xml
+
+# ============================================
+# 📦 前端资源（如果项目包含前端）
+# ============================================
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 前端构建产物
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/.nuxt/
+frontend/public/static/
+
+# 前端依赖锁定（可选，建议提交）
+# frontend/package-lock.json
+# frontend/yarn.lock
+
+# ============================================
+# 📝 文档 & 临时笔记
+# ============================================
+
+# 个人笔记
+*.md~
+notes/
+drafts/
+
+# 临时截图
+*.png
+*.jpg
+*.jpeg
+*.gif
+!README.md  # ✅ 例外：项目文档需要提交
+
+# ============================================
+# 🔄 版本控制元数据（通常不需要忽略）
+# ============================================
+
+# 以下通常不需要忽略，除非有特殊需求：
+# .git/
+# .gitattributes
+# .gitmodules
+
+# ============================================
+# ✅ 建议提交的文件（白名单示例）
+# ============================================
+
+# 这些文件应该被提交，即使匹配了上面的规则：
+!.gitignore
+!README.md
+!LICENSE
+!go.mod
+!go.sum
+!Makefile
+!Dockerfile
+!.devcontainer/**
+!.github/**
+!etc/*.yaml        # ✅ 配置文件模板（不含密码）
+!auth/*.sql        # ✅ 数据库结构定义
+!api/*.api         # ✅ API 定义文件
+!proto/*.proto     # ✅ Proto 定义文件
