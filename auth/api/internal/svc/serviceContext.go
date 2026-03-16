@@ -19,9 +19,19 @@ type ServiceContext struct {
 func NewServiceContext(c config.Config) *ServiceContext {
 
 	conn := sqlx.NewMysql(c.DataSource)
+	userModel := model.NewUsersModelWithoutCache(conn)
+	hasValidRedisNode := false
+	for _, node := range c.CacheRedis {
+		if node.Host != "" {
+			hasValidRedisNode = true
+			break
+		}
+	}
+	if hasValidRedisNode {
+		userModel = model.NewUsersModel(conn, c.CacheRedis)
+	}
 	return &ServiceContext{
-		Config: c,
-
-		UserModel: model.NewUsersModel(conn),
+		Config:    c,
+		UserModel: userModel,
 	}
 }

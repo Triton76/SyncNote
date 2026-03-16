@@ -5,7 +5,7 @@ package logic
 
 import (
 	"context"
-	"strconv"
+	"database/sql"
 
 	"SyncNote/auth/api/internal/model"
 	"SyncNote/auth/api/internal/svc"
@@ -29,15 +29,17 @@ func NewLoginLogic(ctx context.Context, svcCtx *svc.ServiceContext) *LoginLogic 
 }
 
 func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err error) {
-	// 这里暂时使用Email作为登陆ID
-	user, err := l.svcCtx.UserModel.FindOneByAccount(l.ctx, req.LoginId)
+	user, err := l.svcCtx.UserModel.FindOneByEmail(l.ctx, sql.NullString{String: req.LoginId, Valid: req.LoginId != ""})
 	if err != nil {
+		return nil, err
+	}
+	if user.PasswordHash != req.Password {
 		return nil, err
 	}
 	return &types.LoginResp{
 		Code:   model.CodeSuccess,
-		UserId: strconv.FormatUint(user.Id, 10),
-		Token:  "233test",
+		UserId: user.Id,
+		Token:  "233",
 		Expire: 114514,
 	}, nil
 }

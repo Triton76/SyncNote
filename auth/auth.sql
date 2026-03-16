@@ -6,10 +6,9 @@ USE syncnote;
 
 CREATE TABLE IF NOT EXISTS users (
     -- 主键（单独声明，goctl 必须这样识别）
-    id BIGINT UNSIGNED AUTO_INCREMENT COMMENT '用户 ID',
+    id CHAR(36) NOT NULL COMMENT '用户 ID(UUID)',
     
     -- 登录相关（添加 DEFAULT 消除警告）
-    account VARCHAR(50) NOT NULL DEFAULT '' COMMENT '登录账号 (邮箱/手机/用户名)',
     password_hash VARCHAR(255) NOT NULL DEFAULT '' COMMENT '加密后的密码',
     
     -- 用户信息（允许 NULL，保持原样）
@@ -27,7 +26,6 @@ CREATE TABLE IF NOT EXISTS users (
     PRIMARY KEY (id),
     
     -- 索引
-    UNIQUE KEY uk_account (account) COMMENT '账号唯一',
     UNIQUE KEY uk_email (email) COMMENT '邮箱唯一',
     KEY idx_status (status) COMMENT '状态索引',
     KEY idx_created (created_at) COMMENT '创建时间索引'
