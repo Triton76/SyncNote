@@ -31,6 +31,9 @@ RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 # 安装 golangci-lint（Go 代码检查）
 RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b /usr/local/bin v1.55.2
 
+# 确保运行时 vscode 用户可以写入 Go 缓存目录
+RUN chown -R vscode:vscode /go
+
 # 切换回非 root 用户
 USER vscode
 
