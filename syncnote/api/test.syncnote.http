@@ -1,0 +1,33 @@
+### 定义变量（可选，方便切换环境）
+@host = http://localhost:8888
+@contentType = application/json
+
+### 1. 测试创建笔记接口（CreateNote）
+# 先创建一篇笔记，返回结果里的 noteId 可用于后续接口测试
+POST {{host}}/api/note/create
+Content-Type: {{contentType}}
+
+{
+  "userId": "test_user_01",
+  "title": "我的第一篇笔记",
+  "content": "这是一篇用于接口测试的初始内容。"
+}
+
+### 2. 测试获取单篇笔记接口（GetNote）
+# 请将下面路径中的 noteId 替换为创建接口返回的真实 noteId
+GET {{host}}/api/note/请替换为真实noteId
+
+### 3. 测试保存笔记接口（SaveNote）
+# expectedVersion 通常先填创建接口返回的 version，一般首次保存可用 1
+POST {{host}}/api/note/save
+Content-Type: {{contentType}}
+
+{
+  "noteId": "请替换为真实noteId",
+  "userId": "test_user_01",
+  "content": "这是更新后的笔记内容，用于测试保存接口。",
+  "expectedVersion": 1
+}
+
+### 4. 测试获取用户笔记列表接口（GetUserNotes）
+GET {{host}}/api/user/test_user_01/notes

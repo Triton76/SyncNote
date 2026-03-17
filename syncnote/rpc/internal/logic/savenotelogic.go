@@ -1,12 +1,13 @@
 package logic
 
 import (
+	"SyncNote/syncnote/rpc/internal/svc"
+	"SyncNote/syncnote/rpc/pb/syncnoterpc"
 	"context"
-
-	"SyncNote/rpc/internal/svc"
-	"SyncNote/rpc/pb/syncnoterpc"
+	"errors"
 
 	"github.com/zeromicro/go-zero/core/logx"
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
 type SaveNoteLogic struct {
@@ -24,26 +25,62 @@ func NewSaveNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SaveNote
 }
 
 func (l *SaveNoteLogic) SaveNote(in *syncnoterpc.SaveNoteReq) (*syncnoterpc.SaveNoteResp, error) {
+	//乐观锁：检查版本号，再更新，若版本号不匹配则拒绝更新，重新同步至最新的版本号后才接受更新。
 	if in.GetNoteId() == "" {
-		return invalidParamSaveResp("noteId is required"), nil
+		return nil, errors.New("Note doesn't specified.")
 	}
 	if in.GetUserId() == "" {
-		return invalidParamSaveResp("userId is required"), nil
+		return nil, errors.New("user_id is required")
 	}
-	if in.GetExpectedVersion() <= 0 {
-		return invalidParamSaveResp("expectedVersion must be greater than 0"), nil
+	note, err := l.svcCtx.NotesModel.FindOne(l.ctx, in.GetNoteId())
+	if err == sqlx.ErrNotFound {
+		return &syncnoterpc.SaveNoteResp{
+			Success:       false,
+			Code:          syncnoterpc.SaveCode_SAVE_CODE_NOT_FOUND,
+			Message:       "Note not found.",
+			LatestVersion: 0,
+		}, nil
 	}
-
-	result, err := l.svcCtx.NoteStore.SaveNote(
-		l.ctx,
-		in.GetNoteId(),
-		in.GetUserId(),
-		in.GetContent(),
-		in.GetExpectedVersion(),
-	)
 	if err != nil {
+		logx.Errorf("FindOne error: %v", err)
 		return nil, err
 	}
+	//权限校验
+	if note.UserId != in.UserId {
+		return &syncnoterpc.SaveNoteResp{
+			Success: false,
+			Code:    syncnoterpc.SaveCode_SAVE_CODE_UNSPECIFIED, // 确保 proto 里有这个枚举
+			Message: "Permission denied: cannot modify other user's note.",
+		}, nil
+	}
+	if in.ExpectedVersion != int64(note.Version) {
+		//这里是版本冲突，返回最新内容让客户端决定处理。
+		return &syncnoterpc.SaveNoteResp{
+			Success: false,
+			Code: syncnoterpc.SaveCode_SAVE_CODE_VERSION_CONFLICT,
+			Message: "Save failed: version conflict.",
+			LatestVersion: int64(note.Version),
+			LatestContent: note.Content,
+		}, nil
+	} 
+	note.Version++
+	note.Content = in.Content
 
-	return toSaveNoteResp(result), nil
+	err = l.svcCtx.NotesModel.Update(l.ctx, note)
+	if err != nil {
+		logx.Errorf("Update note failed: %v", err)
+		return nil, err
+	}
+	return &syncnoterpc.SaveNoteResp{
+		Success: true,
+		Code: syncnoterpc.SaveCode_SAVE_CODE_OK,
+		Message: "Save successed.",
+		Note: &syncnoterpc.NoteResp{
+			NoteId:       note.NoteId,
+			Version:      int64(note.Version),
+			// Content: note.Content, // 可选
+		},
+		LatestVersion: int64(note.Version),
+	}, nil
+	
 }

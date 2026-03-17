@@ -5,9 +5,8 @@
 package syncnoterpcclient
 
 import (
+	"SyncNote/syncnote/rpc/pb/syncnoterpc"
 	"context"
-
-	"SyncNote/rpc/pb/syncnoterpc"
 
 	"github.com/zeromicro/go-zero/zrpc"
 	"google.golang.org/grpc"

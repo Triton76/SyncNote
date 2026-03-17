@@ -4,12 +4,11 @@
 package main
 
 import (
+	"SyncNote/syncnote/api/internal/config"
+	"SyncNote/syncnote/api/internal/handler"
+	"SyncNote/syncnote/api/internal/svc"
 	"flag"
 	"fmt"
-
-	"SyncNote/api/internal/config"
-	"SyncNote/api/internal/handler"
-	"SyncNote/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"

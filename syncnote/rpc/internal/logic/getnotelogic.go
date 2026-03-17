@@ -1,11 +1,10 @@
 package logic
 
 import (
+	"SyncNote/syncnote/rpc/internal/svc"
+	"SyncNote/syncnote/rpc/pb/syncnoterpc"
 	"context"
 	"errors"
-
-	"SyncNote/rpc/internal/svc"
-	"SyncNote/rpc/pb/syncnoterpc"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -29,10 +28,16 @@ func (l *GetNoteLogic) GetNote(in *syncnoterpc.NoteReq) (*syncnoterpc.NoteResp, 
 		return nil, errors.New("noteId is required")
 	}
 
-	note, err := l.svcCtx.NoteStore.GetNoteByID(l.ctx, in.GetNoteId())
+	note, err := l.svcCtx.NotesModel.FindOne(l.ctx, in.GetNoteId())
 	if err != nil {
 		return nil, err
 	}
-
-	return toNoteResp(note), nil
+	return &syncnoterpc.NoteResp{
+		NoteId: note.NoteId,
+		UserId: note.UserId,
+		Title: note.Title,
+		Content: note.Content,
+		Version: int64(note.Version),
+		LastModified: note.LastModified,
+	}, nil
 }

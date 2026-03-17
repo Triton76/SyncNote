@@ -4,11 +4,10 @@
 package logic
 
 import (
+	"SyncNote/syncnote/api/internal/svc"
+	"SyncNote/syncnote/api/internal/types"
+	"SyncNote/syncnote/rpc/syncnoterpcclient"
 	"context"
-
-	"SyncNote/api/internal/svc"
-	"SyncNote/api/internal/types"
-	"SyncNote/rpc/syncnoterpcclient"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )

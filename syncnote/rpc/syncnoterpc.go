@@ -1,13 +1,12 @@
 package main
 
 import (
+	"SyncNote/syncnote/rpc/internal/config"
+	"SyncNote/syncnote/rpc/internal/server"
+	"SyncNote/syncnote/rpc/internal/svc"
+	"SyncNote/syncnote/rpc/pb/syncnoterpc"
 	"flag"
 	"fmt"
-
-	"SyncNote/rpc/internal/config"
-	"SyncNote/rpc/internal/server"
-	"SyncNote/rpc/internal/svc"
-	"SyncNote/rpc/pb/syncnoterpc"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"

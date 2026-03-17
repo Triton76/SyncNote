@@ -4,11 +4,11 @@
 package handler
 
 import (
+	"SyncNote/syncnote/api/internal/logic"
+	"SyncNote/syncnote/api/internal/svc"
+	"SyncNote/syncnote/api/internal/types"
 	"net/http"
 
-	"SyncNote/api/internal/logic"
-	"SyncNote/api/internal/svc"
-	"SyncNote/api/internal/types"
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
 

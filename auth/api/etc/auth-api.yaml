@@ -4,4 +4,7 @@ Port: 8888
 
 DataSource: root:devpass123@tcp(127.0.0.1:3306)/syncnote?charset=utf8mb4&parseTime=true&loc=Local
 
-CacheRedis: []
+CacheRedis:
+  - Host: 127.0.0.1:6379
+    Pass: ""
+    Type: node

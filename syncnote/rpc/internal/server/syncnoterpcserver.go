@@ -5,11 +5,10 @@
 package server
 
 import (
+	"SyncNote/syncnote/rpc/internal/logic"
+	"SyncNote/syncnote/rpc/internal/svc"
+	"SyncNote/syncnote/rpc/pb/syncnoterpc"
 	"context"
-
-	"SyncNote/rpc/internal/logic"
-	"SyncNote/rpc/internal/svc"
-	"SyncNote/rpc/pb/syncnoterpc"
 )
 
 type SyncnoterpcServer struct {

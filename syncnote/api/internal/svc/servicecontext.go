@@ -4,8 +4,8 @@
 package svc
 
 import (
-	"SyncNote/api/internal/config"
-	"SyncNote/rpc/syncnoterpcclient"
+	"SyncNote/syncnote/api/internal/config"
+	"SyncNote/syncnote/rpc/syncnoterpcclient"
 
 	"github.com/zeromicro/go-zero/zrpc"
 )

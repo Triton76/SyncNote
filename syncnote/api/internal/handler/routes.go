@@ -4,9 +4,8 @@
 package handler
 
 import (
+	"SyncNote/syncnote/api/internal/svc"
 	"net/http"
-
-	"SyncNote/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
 )
