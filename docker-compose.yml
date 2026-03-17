@@ -1,6 +1,6 @@
 services:
   etcd:
-    image: dhi.io/etcd:3-debian13-dev
+    image: quay.io/coreos/etcd:v3.5.16
     container_name: etcd
     restart: unless-stopped
     ports:
