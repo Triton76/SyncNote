@@ -1,0 +1,25 @@
+### 定义变量 (可选，方便切换环境)
+@host = http://localhost:8888
+@contentType = application/json
+
+### 1. 测试注册接口 (Register)
+# 发送请求前，请确保数据库中没有相同的 email
+POST {{host}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "username": "test_user_01",
+  "email": "test01@example.com",
+  "password": "123456",
+  "captcha": "233"
+}
+
+### 2. 测试登录接口 (Login)
+# 使用刚才注册的账号登录
+POST {{host}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "loginId": "test01@example.com",
+  "password": "123456"
+}
