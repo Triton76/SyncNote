@@ -38,11 +38,11 @@ func (l *CreateNoteLogic) CreateNote(in *syncnoterpc.CreateNoteReq) (*syncnoterp
 		return nil, err
 	}
 	note := &model.Notes{
-		NoteId: newNoteId.String(),
-		UserId: in.UserId,
-		Title: in.Title,
-		Content: in.Content,
-		Version: 1,
+		NoteId:       newNoteId.String(),
+		UserId:       in.UserId,
+		Title:        in.Title,
+		Content:      in.Content,
+		Version:      1,
 		LastModified: time.Now().Unix(),
 	}
 	res, err := l.svcCtx.NotesModel.Insert(l.ctx, note)
@@ -54,14 +54,14 @@ func (l *CreateNoteLogic) CreateNote(in *syncnoterpc.CreateNoteReq) (*syncnoterp
 		return nil, err
 	}
 	if rows == 0 {
-		return nil, errors.New("save note failed.")
+		return nil, errors.New("save note failed")
 	}
 	return &syncnoterpc.NoteResp{
-		NoteId: note.NoteId,
-		UserId: note.UserId,
-		Title: note.Title,
-		Content: note.Content,
-		Version: int64(note.Version),
+		NoteId:       note.NoteId,
+		UserId:       note.UserId,
+		Title:        note.Title,
+		Content:      note.Content,
+		Version:      int64(note.Version),
 		LastModified: note.LastModified,
-	},nil
+	}, nil
 }

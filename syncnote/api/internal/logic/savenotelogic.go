@@ -27,7 +27,6 @@ func NewSaveNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SaveNote
 }
 
 func (l *SaveNoteLogic) SaveNote(req *types.SaveNoteReq) (resp *types.SaveNoteResp, err error) {
-	// todo: add your logic here and delete this line
 	rpcResp, err := l.svcCtx.SyncNoteRpc.SaveNote(l.ctx, &syncnoterpcclient.SaveNoteReq{
 		NoteId:          req.NoteId,
 		UserId:          req.UserId,
@@ -57,6 +56,5 @@ func (l *SaveNoteLogic) SaveNote(req *types.SaveNoteReq) (resp *types.SaveNoteRe
 		Message:       rpcResp.Message,
 		Note:          note,
 		LatestVersion: rpcResp.LatestVersion,
-		LatestContent: rpcResp.LatestContent,
 	}, nil
 }

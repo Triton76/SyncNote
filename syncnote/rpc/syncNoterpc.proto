@@ -26,6 +26,7 @@ message SaveNoteReq {
   string user_id          = 2 [json_name = "userId"];
   string content          = 3;
   int64  expected_version = 4 [json_name = "expectedVersion"];
+  string title            = 5[json_name = "title"];
 }
 
 message NoteResp {
@@ -58,7 +59,6 @@ message SaveNoteResp {
   string   message        = 3;
   NoteResp note           = 4;
   int64    latest_version = 5 [json_name = "latestVersion"];
-  string   latest_content = 6 [json_name = "latestContent"];
 }
 
 service Syncnoterpc {

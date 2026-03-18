@@ -1,20 +1,20 @@
 syntax = "v1"
 
 type CreateNoteReq {
-	userId  string `json:"userId"`
-	title   string `json:"title"`
-	content string `json:"content,optional"`
+	UserId  string `json:"userId"`
+	Title   string `json:"title"`
+	Content string `json:"content,omitempty"`
 }
 
 type NoteReq {
-	noteId string `path:"noteId"`
+	NoteId string `path:"noteId"`
 }
 
 type SaveNoteReq {
-	noteId          string `json:"noteId"`
-	userId          string `json:"userId"`
-	content         string `json:"content"`
-	expectedVersion int64  `json:"expectedVersion"`
+	NoteId          string `json:"noteId"`
+	UserId          string `json:"userId"`
+	Content         string `json:"content"`
+	ExpectedVersion int64  `json:"expectedVersion"`
 }
 
 type NoteResp {
@@ -34,7 +34,7 @@ type NoteSummary {
 }
 
 type UserNotesReq {
-	userId string `path:"userId"`
+	UserId string `path:"userId"`
 }
 
 type UserNotesResp {
@@ -45,9 +45,8 @@ type SaveNoteResp {
 	success       bool
 	code          string
 	message       string
-	note          *NoteResp `json:"note,optional"`
-	latestVersion int64     `json:"latestVersion,optional"`
-	latestContent string    `json:"latestContent,optional"`
+	Note          *NoteResp `json:"note,omitempty"`
+	LatestVersion int64     `json:"latestVersion,omitempty"`
 }
 
 service syncNote-api {

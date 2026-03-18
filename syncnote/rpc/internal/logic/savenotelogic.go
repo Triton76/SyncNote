@@ -5,6 +5,7 @@ import (
 	"SyncNote/syncnote/rpc/pb/syncnoterpc"
 	"context"
 	"errors"
+	"time"
 
 	"github.com/zeromicro/go-zero/core/logx"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -27,7 +28,7 @@ func NewSaveNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SaveNote
 func (l *SaveNoteLogic) SaveNote(in *syncnoterpc.SaveNoteReq) (*syncnoterpc.SaveNoteResp, error) {
 	//乐观锁：检查版本号，再更新，若版本号不匹配则拒绝更新，重新同步至最新的版本号后才接受更新。
 	if in.GetNoteId() == "" {
-		return nil, errors.New("Note doesn't specified.")
+		return nil, errors.New("note doesn't specified")
 	}
 	if in.GetUserId() == "" {
 		return nil, errors.New("user_id is required")
@@ -57,14 +58,23 @@ func (l *SaveNoteLogic) SaveNote(in *syncnoterpc.SaveNoteReq) (*syncnoterpc.Save
 		//这里是版本冲突，返回最新内容让客户端决定处理。
 		return &syncnoterpc.SaveNoteResp{
 			Success: false,
-			Code: syncnoterpc.SaveCode_SAVE_CODE_VERSION_CONFLICT,
+			Code:    syncnoterpc.SaveCode_SAVE_CODE_VERSION_CONFLICT,
 			Message: "Save failed: version conflict.",
+			Note: &syncnoterpc.NoteResp{
+				NoteId:       note.NoteId,
+				UserId:       note.UserId,
+				Title:        note.Title,
+				Content:      note.Content,
+				Version:      int64(note.Version),
+				LastModified: note.LastModified,
+			},
 			LatestVersion: int64(note.Version),
-			LatestContent: note.Content,
 		}, nil
-	} 
+	}
 	note.Version++
+	note.Title = in.Title
 	note.Content = in.Content
+	note.LastModified = time.Now().UnixMilli()
 
 	err = l.svcCtx.NotesModel.Update(l.ctx, note)
 	if err != nil {
@@ -73,14 +83,16 @@ func (l *SaveNoteLogic) SaveNote(in *syncnoterpc.SaveNoteReq) (*syncnoterpc.Save
 	}
 	return &syncnoterpc.SaveNoteResp{
 		Success: true,
-		Code: syncnoterpc.SaveCode_SAVE_CODE_OK,
+		Code:    syncnoterpc.SaveCode_SAVE_CODE_OK,
 		Message: "Save successed.",
 		Note: &syncnoterpc.NoteResp{
 			NoteId:       note.NoteId,
+			UserId:       note.UserId,
+			Title:        note.Title,
+			Content:      note.Content,
 			Version:      int64(note.Version),
-			// Content: note.Content, // 可选
+			LastModified: note.LastModified,
 		},
-		LatestVersion: int64(note.Version),
 	}, nil
-	
+
 }
