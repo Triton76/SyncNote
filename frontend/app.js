@@ -32,22 +32,28 @@ function boot() {
   els.apiHost.value = localStorage.getItem(storageKeys.apiHost) || els.apiHost.value;
   els.token.value = localStorage.getItem(storageKeys.token) || "";
   bindEvents();
+  log(`Page origin: ${window.location.origin}`);
+  log(`Auth Host: ${els.authHost.value.trim()} | API Host: ${els.apiHost.value.trim()}`);
   log("SyncNote Demo ready.");
 }
 
 function bindEvents() {
   els.saveHostBtn.addEventListener("click", () => {
-    localStorage.setItem(storageKeys.authHost, els.authHost.value.trim());
-    localStorage.setItem(storageKeys.apiHost, els.apiHost.value.trim());
-    log("Host 配置已保存。");
+    const authHost = normalizeHost(els.authHost.value);
+    const apiHost = normalizeHost(els.apiHost.value);
+    els.authHost.value = authHost;
+    els.apiHost.value = apiHost;
+    localStorage.setItem(storageKeys.authHost, authHost);
+    localStorage.setItem(storageKeys.apiHost, apiHost);
+    log(`Host 配置已保存。Auth=${authHost}, API=${apiHost}`);
   });
 
-  els.registerBtn.addEventListener("click", register);
-  els.loginBtn.addEventListener("click", login);
-  els.createBtn.addEventListener("click", createNote);
-  els.getBtn.addEventListener("click", getNote);
-  els.saveBtn.addEventListener("click", saveNote);
-  els.listBtn.addEventListener("click", listNotes);
+  els.registerBtn.addEventListener("click", () => runAction("注册", register));
+  els.loginBtn.addEventListener("click", () => runAction("登录", login));
+  els.createBtn.addEventListener("click", () => runAction("创建笔记", createNote));
+  els.getBtn.addEventListener("click", () => runAction("读取笔记", getNote));
+  els.saveBtn.addEventListener("click", () => runAction("保存笔记", saveNote));
+  els.listBtn.addEventListener("click", () => runAction("拉取笔记列表", listNotes));
 }
 
 function jsonHeaders(withAuth = false) {
@@ -61,29 +67,54 @@ function jsonHeaders(withAuth = false) {
 }
 
 async function req(url, options = {}) {
-  const res = await fetch(url, options);
-  const text = await res.text();
-  let data = text;
   try {
-    data = JSON.parse(text);
-  } catch (_e) {
-    // keep plain text when response is not json
+    const res = await fetch(url, options);
+    const text = await res.text();
+    let data = text;
+    try {
+      data = JSON.parse(text);
+    } catch (_e) {
+      // keep plain text when response is not json
+    }
+    log(`${options.method || "GET"} ${url}\nstatus=${res.status}\n${pretty(data)}\n`);
+    if (!res.ok) {
+      throw new Error(`请求失败: ${res.status}`);
+    }
+    return data;
+  } catch (err) {
+    const msg = err && err.message ? err.message : String(err);
+    const hint =
+      msg.includes("Failed to fetch")
+        ? "网络失败或被 CORS 拦截。请检查后端是否启动、端口是否正确、以及 OPTIONS 预检是否返回 204。"
+        : "请求异常，请检查日志。";
+    log(`请求异常: ${msg}\n诊断建议: ${hint}\n`);
+    throw err;
   }
-  log(`${options.method || "GET"} ${url}\nstatus=${res.status}\n${pretty(data)}\n`);
-  if (!res.ok) {
-    throw new Error(`请求失败: ${res.status}`);
+}
+
+function normalizeHost(val) {
+  return String(val || "").trim().replace(/\/+$/, "");
+}
+
+async function runAction(title, fn) {
+  try {
+    await fn();
+  } catch (err) {
+    const msg = err && err.message ? err.message : String(err);
+    alert(`${title}失败: ${msg}`);
   }
-  return data;
 }
 
 async function register() {
+  const authHost = normalizeHost(els.authHost.value);
+  els.authHost.value = authHost;
   const payload = {
     username: els.username.value.trim(),
     email: els.email.value.trim(),
     password: els.password.value,
     captcha: "233",
   };
-  const data = await req(`${els.authHost.value.trim()}/auth/register`, {
+  const data = await req(`${authHost}/auth/register`, {
     method: "POST",
     headers: jsonHeaders(),
     body: JSON.stringify(payload),
@@ -96,11 +127,22 @@ async function register() {
 }
 
 async function login() {
+  const authHost = normalizeHost(els.authHost.value);
+  els.authHost.value = authHost;
+
+  const loginId = (els.email.value || "").trim() || (els.username.value || "").trim();
+  if (!loginId) {
+    alert("登录需要 loginId。请优先填写邮箱（当前后端按邮箱登录）。");
+    return;
+  }
+
   const payload = {
-    username: els.username.value.trim(),
+    loginId,
     password: els.password.value,
   };
-  const data = await req(`${els.authHost.value.trim()}/auth/login`, {
+
+  log(`登录使用 loginId=${loginId}`);
+  const data = await req(`${authHost}/auth/login`, {
     method: "POST",
     headers: jsonHeaders(),
     body: JSON.stringify(payload),
@@ -113,11 +155,13 @@ async function login() {
 }
 
 async function createNote() {
+  const apiHost = normalizeHost(els.apiHost.value);
+  els.apiHost.value = apiHost;
   const payload = {
     title: els.noteTitle.value.trim(),
     content: els.noteContent.value,
   };
-  const data = await req(`${els.apiHost.value.trim()}/api/note/create`, {
+  const data = await req(`${apiHost}/api/note/create`, {
     method: "POST",
     headers: jsonHeaders(true),
     body: JSON.stringify(payload),
@@ -136,13 +180,15 @@ async function createNote() {
 }
 
 async function getNote() {
+  const apiHost = normalizeHost(els.apiHost.value);
+  els.apiHost.value = apiHost;
   const noteId = els.noteId.value.trim();
   if (!noteId) {
     alert("请先输入或选择 Note ID");
     return;
   }
 
-  const data = await req(`${els.apiHost.value.trim()}/api/note/${encodeURIComponent(noteId)}`, {
+  const data = await req(`${apiHost}/api/note/${encodeURIComponent(noteId)}`, {
     headers: {
       Authorization: `Bearer ${els.token.value.trim()}`,
     },
@@ -156,6 +202,8 @@ async function getNote() {
 }
 
 async function saveNote() {
+  const apiHost = normalizeHost(els.apiHost.value);
+  els.apiHost.value = apiHost;
   const noteId = els.noteId.value.trim();
   if (!noteId) {
     alert("请先输入或选择 Note ID");
@@ -168,7 +216,7 @@ async function saveNote() {
     expectedVersion: Number(els.expectedVersion.value || 0),
   };
 
-  const data = await req(`${els.apiHost.value.trim()}/api/note/save`, {
+  const data = await req(`${apiHost}/api/note/save`, {
     method: "POST",
     headers: jsonHeaders(true),
     body: JSON.stringify(payload),
@@ -185,7 +233,9 @@ async function saveNote() {
 }
 
 async function listNotes() {
-  const data = await req(`${els.apiHost.value.trim()}/api/user/notes`, {
+  const apiHost = normalizeHost(els.apiHost.value);
+  els.apiHost.value = apiHost;
+  const data = await req(`${apiHost}/api/user/notes`, {
     headers: {
       Authorization: `Bearer ${els.token.value.trim()}`,
     },

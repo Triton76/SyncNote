@@ -4,6 +4,7 @@
 package main
 
 import (
+	"SyncNote/pkg/httpx"
 	"SyncNote/syncnote/api/internal/config"
 	"SyncNote/syncnote/api/internal/handler"
 	"SyncNote/syncnote/api/internal/svc"
@@ -24,6 +25,7 @@ func main() {
 
 	server := rest.MustNewServer(c.RestConf)
 	defer server.Stop()
+	server.Use(httpx.CorsMiddleware())
 
 	ctx := svc.NewServiceContext(c)
 	handler.RegisterHandlers(server, ctx)

@@ -10,6 +10,7 @@ import (
 	"SyncNote/auth/api/internal/config"
 	"SyncNote/auth/api/internal/handler"
 	"SyncNote/auth/api/internal/svc"
+	"SyncNote/pkg/httpx"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/rest"
@@ -25,6 +26,7 @@ func main() {
 
 	server := rest.MustNewServer(c.RestConf)
 	defer server.Stop()
+	server.Use(httpx.CorsMiddleware())
 
 	ctx := svc.NewServiceContext(c)
 	handler.RegisterHandlers(server, ctx)

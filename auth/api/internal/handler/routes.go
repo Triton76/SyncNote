@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"SyncNote/auth/api/internal/svc"
+	"SyncNote/pkg/httpx"
 
 	"github.com/zeromicro/go-zero/rest"
 )
@@ -15,9 +16,19 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
 		[]rest.Route{
 			{
+				Method:  http.MethodOptions,
+				Path:    "/auth/login",
+				Handler: httpx.PreflightHandler(),
+			},
+			{
 				Method:  http.MethodPost,
 				Path:    "/auth/login",
 				Handler: LoginHandler(serverCtx),
+			},
+			{
+				Method:  http.MethodOptions,
+				Path:    "/auth/register",
+				Handler: httpx.PreflightHandler(),
 			},
 			{
 				Method:  http.MethodPost,
