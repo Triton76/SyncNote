@@ -212,6 +212,7 @@ async function saveNote() {
 
   const payload = {
     noteId,
+    title: els.noteTitle.value.trim(),
     content: els.noteContent.value,
     expectedVersion: Number(els.expectedVersion.value || 0),
   };

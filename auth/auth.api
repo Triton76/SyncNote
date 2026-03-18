@@ -10,7 +10,7 @@ type RegisterReq {
 	Email    string `json:"email"`
 	Captcha  string `json:"captcha"`
 	Password string `json:"password"`
-	Username string `json:"username,optional"`
+	Username string `json:"username,omitempty"`
 }
 
 type LoginResp {
@@ -34,4 +34,3 @@ service auth-api {
 	@handler RegisterHandler
 	post /auth/register (RegisterReq) returns (RegisterResp)
 }
-

@@ -72,7 +72,9 @@ func (l *SaveNoteLogic) SaveNote(in *syncnoterpc.SaveNoteReq) (*syncnoterpc.Save
 		}, nil
 	}
 	note.Version++
-	note.Title = in.Title
+	if in.Title != "" {
+		note.Title = in.Title
+	}
 	note.Content = in.Content
 	note.LastModified = time.Now().UnixMilli()
 

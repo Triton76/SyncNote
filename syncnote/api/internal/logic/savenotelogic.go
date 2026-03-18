@@ -35,6 +35,7 @@ func (l *SaveNoteLogic) SaveNote(req *types.SaveNoteReq) (resp *types.SaveNoteRe
 	rpcResp, err := l.svcCtx.SyncNoteRpc.SaveNote(l.ctx, &syncnoterpcclient.SaveNoteReq{
 		NoteId:          req.NoteId,
 		UserId:          userID,
+		Title:           req.Title,
 		Content:         req.Content,
 		ExpectedVersion: req.ExpectedVersion,
 	})

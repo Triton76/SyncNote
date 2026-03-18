@@ -11,6 +11,7 @@ type NoteReq {
 
 type SaveNoteReq {
 	NoteId          string `json:"noteId"`
+	Title           string `json:"title,omitempty"`
 	Content         string `json:"content"`
 	ExpectedVersion int64  `json:"expectedVersion"`
 }
@@ -61,4 +62,3 @@ service syncNote-api {
 	@handler GetUserNotesHandler
 	get /api/user/notes (UserNotesReq) returns (UserNotesResp)
 }
-

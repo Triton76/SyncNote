@@ -30,6 +30,7 @@ type NoteSummary struct {
 
 type SaveNoteReq struct {
 	NoteId          string `json:"noteId"`
+	Title           string `json:"title,omitempty"`
 	Content         string `json:"content"`
 	ExpectedVersion int64  `json:"expectedVersion"`
 }
