@@ -93,8 +93,6 @@ config.local.go
 *.sqlite
 *.sqlite3
 
-# MySQL dump 文件（备份用，不提交）
-*.sql
 !auth/auth.sql     # ✅ 例外：表结构定义文件需要提交
 
 # Redis RDB/AOF 文件

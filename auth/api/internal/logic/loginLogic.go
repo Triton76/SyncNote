@@ -6,10 +6,13 @@ package logic
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"SyncNote/auth/api/internal/model"
 	"SyncNote/auth/api/internal/svc"
 	"SyncNote/auth/api/internal/types"
+	"SyncNote/pkg/auth"
+	"SyncNote/pkg/crypto"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -33,13 +36,22 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 	if err != nil {
 		return nil, err
 	}
-	if user.PasswordHash != req.Password {
+	if !crypto.CheckPassword(req.Password, user.PasswordHash) {
+		return &types.LoginResp{
+			Code:   model.CodePasswordWrong,
+			UserId: user.Id,
+			Token:  "",
+			Expire: 1,
+		}, nil
+	}
+	token, err := auth.GenerateToken(req.LoginId)
+	if err != nil {
 		return nil, err
 	}
 	return &types.LoginResp{
 		Code:   model.CodeSuccess,
 		UserId: user.Id,
-		Token:  "233",
-		Expire: 114514,
+		Token:  token,
+		Expire: time.Now().Add(auth.TokenExpireDur).Unix(),
 	}, nil
 }

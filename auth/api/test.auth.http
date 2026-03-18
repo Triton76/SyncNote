@@ -1,5 +1,5 @@
 ### 定义变量 (可选，方便切换环境)
-@host = http://localhost:8888
+@host = http://localhost:8889
 @contentType = application/json
 
 ### 1. 测试注册接口 (Register)
