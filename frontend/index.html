@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SyncNote Demo</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg-layer"></div>
+  <main class="app-shell">
+    <header class="topbar">
+      <h1>SyncNote Demo</h1>
+      <p>最小可用前端：鉴权 + 笔记 CRUD 主流程</p>
+    </header>
+
+    <section class="panel config-panel">
+      <h2>服务地址</h2>
+      <div class="grid-2">
+        <label>
+          Auth Host
+          <input id="authHost" type="text" value="http://127.0.0.1:8889" />
+        </label>
+        <label>
+          API Host
+          <input id="apiHost" type="text" value="http://127.0.0.1:8888" />
+        </label>
+      </div>
+      <button id="saveHostBtn" class="btn">保存地址</button>
+    </section>
+
+    <section class="panel auth-panel">
+      <h2>注册 / 登录</h2>
+      <div class="grid-2">
+        <label>
+          用户名
+          <input id="username" type="text" placeholder="demo_user" />
+        </label>
+        <label>
+          邮箱
+          <input id="email" type="email" placeholder="demo@example.com" />
+        </label>
+      </div>
+      <div class="grid-2">
+        <label>
+          密码
+          <input id="password" type="password" placeholder="123456" />
+        </label>
+        <label>
+          Token
+          <input id="token" type="text" placeholder="登录后自动填充" />
+        </label>
+      </div>
+      <div class="actions">
+        <button id="registerBtn" class="btn">注册并拿 Token</button>
+        <button id="loginBtn" class="btn ghost">登录并拿 Token</button>
+      </div>
+    </section>
+
+    <section class="panel notes-panel">
+      <h2>笔记操作</h2>
+      <div class="grid-2">
+        <label>
+          标题
+          <input id="noteTitle" type="text" placeholder="我的第一条笔记" />
+        </label>
+        <label>
+          Note ID
+          <input id="noteId" type="text" placeholder="创建/选择后自动填充" />
+        </label>
+      </div>
+      <label>
+        内容
+        <textarea id="noteContent" rows="8" placeholder="输入笔记内容"></textarea>
+      </label>
+      <div class="grid-2">
+        <label>
+          预期版本 expectedVersion
+          <input id="expectedVersion" type="number" value="1" min="1" />
+        </label>
+        <label>
+          当前版本（只读）
+          <input id="currentVersion" type="number" value="0" readonly />
+        </label>
+      </div>
+      <div class="actions">
+        <button id="createBtn" class="btn">创建笔记</button>
+        <button id="getBtn" class="btn ghost">读取笔记</button>
+        <button id="saveBtn" class="btn">保存笔记</button>
+        <button id="listBtn" class="btn ghost">拉取我的笔记列表</button>
+      </div>
+    </section>
+
+    <section class="panel list-panel">
+      <h2>我的笔记</h2>
+      <ul id="notesList" class="notes-list"></ul>
+    </section>
+
+    <section class="panel log-panel">
+      <h2>响应日志</h2>
+      <pre id="logOutput" class="log-output"></pre>
+    </section>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -4,13 +4,14 @@ set -u
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 API_SCRIPT="$ROOT_DIR/scripts/test_syncnote_api.sh"
 RPC_SCRIPT="$ROOT_DIR/scripts/test_syncnote_rpc.sh"
+API_AUTHZ_SCRIPT="$ROOT_DIR/scripts/test_syncnote_api_authz.sh"
 
 MODE="${1:-all}"
 
 usage() {
   cat <<'EOF'
 Usage:
-  ./scripts/test_all.sh [all|api|rpc]
+  ./scripts/test_all.sh [all|api|rpc|api-authz]
 
 Env:
   API_HOST   API base URL for API smoke test (default: http://127.0.0.1:8888)
@@ -36,6 +37,12 @@ if [[ ! -x "$RPC_SCRIPT" ]]; then
   exit 1
 fi
 
+if [[ ! -x "$API_AUTHZ_SCRIPT" ]]; then
+  echo "Error: missing or non-executable $API_AUTHZ_SCRIPT"
+  echo "Try: chmod +x scripts/test_syncnote_api_authz.sh"
+  exit 1
+fi
+
 run_api() {
   echo "========================================"
   echo "Running API smoke test"
@@ -52,12 +59,23 @@ run_rpc() {
   "$RPC_SCRIPT"
 }
 
+run_api_authz() {
+  echo "========================================"
+  echo "Running API authz smoke test"
+  echo "API_HOST=${API_HOST:-http://127.0.0.1:8888}"
+  echo "AUTH_HOST=${AUTH_HOST:-http://127.0.0.1:8889}"
+  echo "========================================"
+  "$API_AUTHZ_SCRIPT"
+}
+
 api_rc=0
 rpc_rc=0
+api_authz_rc=0
 
 case "$MODE" in
   all)
     run_api || api_rc=$?
+    run_api_authz || api_authz_rc=$?
     run_rpc || rpc_rc=$?
     ;;
   api)
@@ -65,6 +83,9 @@ case "$MODE" in
     ;;
   rpc)
     run_rpc || rpc_rc=$?
+    ;;
+  api-authz)
+    run_api_authz || api_authz_rc=$?
     ;;
   -h|--help|help)
     usage
@@ -80,10 +101,11 @@ esac
 echo "========================================"
 echo "Summary"
 printf "API result: %s\n" "$( [[ $api_rc -eq 0 ]] && echo PASS || echo FAIL )"
+printf "API authz result: %s\n" "$( [[ $api_authz_rc -eq 0 ]] && echo PASS || echo FAIL )"
 printf "RPC result: %s\n" "$( [[ $rpc_rc -eq 0 ]] && echo PASS || echo FAIL )"
 echo "========================================"
 
-if [[ $api_rc -ne 0 || $rpc_rc -ne 0 ]]; then
+if [[ $api_rc -ne 0 || $api_authz_rc -ne 0 || $rpc_rc -ne 0 ]]; then
   exit 1
 fi
 
