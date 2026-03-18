@@ -27,9 +27,13 @@ func NewGetUserNotesLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetU
 }
 
 func (l *GetUserNotesLogic) GetUserNotes(req *types.UserNotesReq) (resp *types.UserNotesResp, err error) {
-	// todo: add your logic here and delete this line
+	userID, err := currentUserIDFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	rpcResp, err := l.svcCtx.SyncNoteRpc.GetUserNotes(l.ctx, &syncnoterpcclient.UserNotesReq{
-		UserId: req.UserId,
+		UserId: userID,
 	})
 	if err != nil {
 		return nil, err

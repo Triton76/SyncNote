@@ -27,9 +27,14 @@ func NewSaveNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *SaveNote
 }
 
 func (l *SaveNoteLogic) SaveNote(req *types.SaveNoteReq) (resp *types.SaveNoteResp, err error) {
+	userID, err := currentUserIDFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	rpcResp, err := l.svcCtx.SyncNoteRpc.SaveNote(l.ctx, &syncnoterpcclient.SaveNoteReq{
 		NoteId:          req.NoteId,
-		UserId:          req.UserId,
+		UserId:          userID,
 		Content:         req.Content,
 		ExpectedVersion: req.ExpectedVersion,
 	})

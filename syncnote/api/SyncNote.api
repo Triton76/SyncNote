@@ -1,7 +1,6 @@
 syntax = "v1"
 
 type CreateNoteReq {
-	UserId  string `json:"userId"`
 	Title   string `json:"title"`
 	Content string `json:"content,omitempty"`
 }
@@ -12,7 +11,6 @@ type NoteReq {
 
 type SaveNoteReq {
 	NoteId          string `json:"noteId"`
-	UserId          string `json:"userId"`
 	Content         string `json:"content"`
 	ExpectedVersion int64  `json:"expectedVersion"`
 }
@@ -33,9 +31,7 @@ type NoteSummary {
 	lastModified int64
 }
 
-type UserNotesReq {
-	UserId string `path:"userId"`
-}
+type UserNotesReq {}
 
 type UserNotesResp {
 	notes []NoteSummary
@@ -49,6 +45,9 @@ type SaveNoteResp {
 	LatestVersion int64     `json:"latestVersion,omitempty"`
 }
 
+@server (
+	middleware: Auth
+)
 service syncNote-api {
 	@handler GetNoteHandler
 	get /api/note/:noteId (NoteReq) returns (NoteResp)
@@ -60,6 +59,6 @@ service syncNote-api {
 	post /api/note/save (SaveNoteReq) returns (SaveNoteResp)
 
 	@handler GetUserNotesHandler
-	get /api/user/:userId/notes (UserNotesReq) returns (UserNotesResp)
+	get /api/user/notes (UserNotesReq) returns (UserNotesResp)
 }
 

@@ -4,7 +4,6 @@
 package types
 
 type CreateNoteReq struct {
-	UserId  string `json:"userId"`
 	Title   string `json:"title"`
 	Content string `json:"content,omitempty"`
 }
@@ -31,7 +30,6 @@ type NoteSummary struct {
 
 type SaveNoteReq struct {
 	NoteId          string `json:"noteId"`
-	UserId          string `json:"userId"`
 	Content         string `json:"content"`
 	ExpectedVersion int64  `json:"expectedVersion"`
 }
@@ -45,7 +43,6 @@ type SaveNoteResp struct {
 }
 
 type UserNotesReq struct {
-	UserId string `path:"userId"`
 }
 
 type UserNotesResp struct {

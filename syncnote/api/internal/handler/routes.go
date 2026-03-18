@@ -13,27 +13,30 @@ import (
 
 func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 	server.AddRoutes(
-		[]rest.Route{
-			{
-				Method:  http.MethodGet,
-				Path:    "/api/note/:noteId",
-				Handler: GetNoteHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/api/note/create",
-				Handler: CreateNoteHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodPost,
-				Path:    "/api/note/save",
-				Handler: SaveNoteHandler(serverCtx),
-			},
-			{
-				Method:  http.MethodGet,
-				Path:    "/api/user/:userId/notes",
-				Handler: GetUserNotesHandler(serverCtx),
-			},
-		},
+		rest.WithMiddlewares(
+			[]rest.Middleware{serverCtx.Auth},
+			[]rest.Route{
+				{
+					Method:  http.MethodGet,
+					Path:    "/api/note/:noteId",
+					Handler: GetNoteHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/note/create",
+					Handler: CreateNoteHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/note/save",
+					Handler: SaveNoteHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/api/user/notes",
+					Handler: GetUserNotesHandler(serverCtx),
+				},
+			}...,
+		),
 	)
 }

@@ -44,7 +44,7 @@ func (l *LoginLogic) Login(req *types.LoginReq) (resp *types.LoginResp, err erro
 			Expire: 1,
 		}, nil
 	}
-	token, err := auth.GenerateToken(req.LoginId)
+	token, err := auth.GenerateToken(user.Id)
 	if err != nil {
 		return nil, err
 	}

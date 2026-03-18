@@ -27,9 +27,13 @@ func NewCreateNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 }
 
 func (l *CreateNoteLogic) CreateNote(req *types.CreateNoteReq) (resp *types.NoteResp, err error) {
-	// todo: add your logic here and delete this line
+	userID, err := currentUserIDFromCtx(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	rpcResp, err := l.svcCtx.SyncNoteRpc.CreateNote(l.ctx, &syncnoterpcclient.CreateNoteReq{
-		UserId:  req.UserId,
+		UserId:  userID,
 		Title:   req.Title,
 		Content: req.Content,
 	})
