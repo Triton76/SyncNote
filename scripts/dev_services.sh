@@ -47,14 +47,38 @@ list_listen_pids_by_port() {
   lsof -t -iTCP:"$port" -sTCP:LISTEN 2>/dev/null || true
 }
 
-ensure_port_available() {
+first_listen_pid_by_port() {
+  local port="$1"
+  list_listen_pids_by_port "$port" | head -n 1
+}
+
+pid_cwd() {
+  local pid="$1"
+  readlink "/proc/$pid/cwd" 2>/dev/null || true
+}
+
+resolve_port_conflict() {
   local service_name="$1"
-  local port="$2"
+  local workdir="$2"
+  local port="$3"
+  local pid_file="$4"
 
   local conflict_pids
   conflict_pids="$(list_listen_pids_by_port "$port")"
   if [[ -z "$conflict_pids" ]]; then
     return 0
+  fi
+
+  local first_pid
+  first_pid="$(first_listen_pid_by_port "$port")"
+  if [[ -n "$first_pid" ]]; then
+    local first_cwd
+    first_cwd="$(pid_cwd "$first_pid")"
+    if [[ "$first_cwd" == "$workdir" ]]; then
+      echo "[OK] $service_name already running (pid=$first_pid, adopted by port=$port)"
+      echo "$first_pid" >"$pid_file"
+      return 2
+    fi
   fi
 
   if [[ "$FORCE_KILL_CONFLICTS" == "1" ]]; then
@@ -103,14 +127,23 @@ start_go_service() {
   local name="$1"
   local workdir="$2"
   local config_rel="$3"
-  local pid_file="$4"
-  local log_file="$5"
+  local port="$4"
+  local pid_file="$5"
+  local log_file="$6"
 
   local existing_pid
   existing_pid="$(read_pid "$pid_file")"
   if is_pid_alive "$existing_pid"; then
     echo "[OK] $name already running (pid=$existing_pid)"
     return 0
+  fi
+
+  local conflict_state=0
+  resolve_port_conflict "$name" "$workdir" "$port" "$pid_file" || conflict_state=$?
+  if [[ "$conflict_state" == "2" ]]; then
+    return 0
+  elif [[ "$conflict_state" != "0" ]]; then
+    return 1
   fi
 
   rm -f "$pid_file"
@@ -135,13 +168,22 @@ start_go_service() {
 stop_go_service() {
   local name="$1"
   local pid_file="$2"
+  local workdir="$3"
+  local port="$4"
 
   local pid
   pid="$(read_pid "$pid_file")"
   if ! is_pid_alive "$pid"; then
-    rm -f "$pid_file"
-    echo "[OK] $name is not running"
-    return 0
+    local adopted_pid
+    adopted_pid="$(first_listen_pid_by_port "$port")"
+    if [[ -n "$adopted_pid" && "$(pid_cwd "$adopted_pid")" == "$workdir" ]]; then
+      pid="$adopted_pid"
+      echo "$pid" >"$pid_file"
+    else
+      rm -f "$pid_file"
+      echo "[OK] $name is not running"
+      return 0
+    fi
   fi
 
   echo "[INFO] stopping $name (pid=$pid) ..."
@@ -166,13 +208,22 @@ stop_go_service() {
 show_go_service() {
   local name="$1"
   local pid_file="$2"
+  local workdir="$3"
+  local port="$4"
 
   local pid
   pid="$(read_pid "$pid_file")"
   if is_pid_alive "$pid"; then
     echo "[RUNNING] $name (pid=$pid)"
   else
-    echo "[STOPPED] $name"
+    local adopted_pid
+    adopted_pid="$(first_listen_pid_by_port "$port")"
+    if [[ -n "$adopted_pid" && "$(pid_cwd "$adopted_pid")" == "$workdir" ]]; then
+      echo "$adopted_pid" >"$pid_file"
+      echo "[RUNNING] $name (pid=$adopted_pid, adopted by port=$port)"
+    else
+      echo "[STOPPED] $name"
+    fi
   fi
 }
 
@@ -208,23 +259,19 @@ up() {
   wait_for_container_health redis 40
   wait_for_container_health mysql 60
 
-  ensure_port_available "syncnote-rpc" 8080
-  ensure_port_available "syncnote-api" 8888
-  ensure_port_available "auth-api" 8889
-
   echo "[STEP] starting Go services"
-  start_go_service "syncnote-rpc" "$ROOT_DIR/syncnote/rpc" "etc/syncnoterpc.yaml" "$SYNCNOTE_RPC_PID" "$SYNCNOTE_RPC_LOG"
-  start_go_service "auth-api" "$ROOT_DIR/auth/api" "etc/auth-api.yaml" "$AUTH_PID" "$AUTH_LOG"
-  start_go_service "syncnote-api" "$ROOT_DIR/syncnote/api" "etc/syncnote-api.yaml" "$SYNCNOTE_API_PID" "$SYNCNOTE_API_LOG"
+  start_go_service "syncnote-rpc" "$ROOT_DIR/syncnote/rpc" "etc/syncnoterpc.yaml" 8080 "$SYNCNOTE_RPC_PID" "$SYNCNOTE_RPC_LOG"
+  start_go_service "auth-api" "$ROOT_DIR/auth/api" "etc/auth-api.yaml" 8889 "$AUTH_PID" "$AUTH_LOG"
+  start_go_service "syncnote-api" "$ROOT_DIR/syncnote/api" "etc/syncnote-api.yaml" 8888 "$SYNCNOTE_API_PID" "$SYNCNOTE_API_LOG"
 
   echo "[DONE] all services are up"
   status
 }
 
 down() {
-  stop_go_service "syncnote-api" "$SYNCNOTE_API_PID"
-  stop_go_service "auth-api" "$AUTH_PID"
-  stop_go_service "syncnote-rpc" "$SYNCNOTE_RPC_PID"
+  stop_go_service "syncnote-api" "$SYNCNOTE_API_PID" "$ROOT_DIR/syncnote/api" 8888
+  stop_go_service "auth-api" "$AUTH_PID" "$ROOT_DIR/auth/api" 8889
+  stop_go_service "syncnote-rpc" "$SYNCNOTE_RPC_PID" "$ROOT_DIR/syncnote/rpc" 8080
 
   need_cmd docker
   echo "[STEP] stopping infrastructure containers"
@@ -234,13 +281,50 @@ down() {
 
 status() {
   echo "--- Go services ---"
-  show_go_service "auth-api" "$AUTH_PID"
-  show_go_service "syncnote-api" "$SYNCNOTE_API_PID"
-  show_go_service "syncnote-rpc" "$SYNCNOTE_RPC_PID"
+  show_go_service "auth-api" "$AUTH_PID" "$ROOT_DIR/auth/api" 8889
+  show_go_service "syncnote-api" "$SYNCNOTE_API_PID" "$ROOT_DIR/syncnote/api" 8888
+  show_go_service "syncnote-rpc" "$SYNCNOTE_RPC_PID" "$ROOT_DIR/syncnote/rpc" 8080
 
   echo
   echo "--- Containers ---"
   compose ps --status running || true
+}
+
+show_go_service_ps() {
+  local name="$1"
+  local pid_file="$2"
+  local workdir="$3"
+  local port="$4"
+
+  local pid
+  pid="$(read_pid "$pid_file")"
+  if ! is_pid_alive "$pid"; then
+    local adopted_pid
+    adopted_pid="$(first_listen_pid_by_port "$port")"
+    if [[ -n "$adopted_pid" && "$(pid_cwd "$adopted_pid")" == "$workdir" ]]; then
+      pid="$adopted_pid"
+      echo "$pid" >"$pid_file"
+    else
+      printf '%-14s %-8s %-6s %-35s %s\n' "$name" "-" "$port" "$workdir" "stopped"
+      return 0
+    fi
+  fi
+
+  local cwd
+  cwd="$(pid_cwd "$pid")"
+  local cmd
+  cmd="$(ps -p "$pid" -o args= 2>/dev/null || true)"
+  if [[ -z "$cmd" ]]; then
+    cmd="unknown"
+  fi
+  printf '%-14s %-8s %-6s %-35s %s\n' "$name" "$pid" "$port" "$cwd" "$cmd"
+}
+
+ps_services() {
+  echo "SERVICE        PID      PORT   CWD                                 CMD"
+  show_go_service_ps "auth-api" "$AUTH_PID" "$ROOT_DIR/auth/api" 8889
+  show_go_service_ps "syncnote-api" "$SYNCNOTE_API_PID" "$ROOT_DIR/syncnote/api" 8888
+  show_go_service_ps "syncnote-rpc" "$SYNCNOTE_RPC_PID" "$ROOT_DIR/syncnote/rpc" 8080
 }
 
 logs() {
@@ -277,6 +361,7 @@ Usage:
   scripts/dev_services.sh down
   scripts/dev_services.sh restart
   scripts/dev_services.sh status
+  scripts/dev_services.sh ps
   scripts/dev_services.sh logs [auth|api|rpc|infra|all]
 
 Notes:
@@ -305,6 +390,9 @@ case "$cmd" in
     ;;
   status)
     status
+    ;;
+  ps)
+    ps_services
     ;;
   logs)
     logs "${2:-all}"
