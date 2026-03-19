@@ -1,12 +1,13 @@
 // VS Code settings.json
 {
     "files.associations": {
-        "*.proto": "proto3"
+        "*.proto": "proto"
     },
     "protoc": {
         "path": "/usr/local/bin/protoc"  // protoc 编译器路径
     },
     "protobuf.externalLinter.enabled": true,
     "protobuf.externalLinter.linter": "protolint",
-    "protobuf.externalLinter.protolintPath": "protolint"
+    "protobuf.externalLinter.protolintPath": "protolint",
+    "protobuf.protoc.path": "/usr/bin/protoc"
 }

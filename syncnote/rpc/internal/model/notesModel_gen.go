@@ -44,10 +44,10 @@ type (
 		UserId       string `db:"user_id"`       // 所属用户ID
 		Title        string `db:"title"`         // 笔记标题
 		Content      string `db:"content"`       // 笔记内容
-		Version      uint64 `db:"version"`       // 版本号
-		LastModified int64  `db:"last_modified"` // 最后修改时间戳
+		Version      uint64 `db:"version"`       // 版本号(乐观锁)
+		LastModified int64  `db:"last_modified"` // 最后修改时间戳(ms)
 		IsDeleted    int64  `db:"is_deleted"`    // 是否删除 0:否 1:是
-		CreatedAt    int64  `db:"created_at"`    // 创建时间戳
+		CreatedAt    int64  `db:"created_at"`    // 创建时间戳(ms)
 	}
 )
 

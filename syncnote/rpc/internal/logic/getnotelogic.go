@@ -33,11 +33,11 @@ func (l *GetNoteLogic) GetNote(in *syncnoterpc.NoteReq) (*syncnoterpc.NoteResp, 
 		return nil, err
 	}
 	return &syncnoterpc.NoteResp{
-		NoteId: note.NoteId,
-		UserId: note.UserId,
-		Title: note.Title,
-		Content: note.Content,
-		Version: int64(note.Version),
+		NoteId:       note.NoteId,
+		UserId:       note.UserId,
+		Title:        note.Title,
+		Content:      note.Content,
+		Version:      int64(note.Version),
 		LastModified: note.LastModified,
 	}, nil
 }

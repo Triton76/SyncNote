@@ -6,7 +6,6 @@ package handler
 import (
 	"net/http"
 
-	"SyncNote/pkg/httpx"
 	"SyncNote/syncnote/api/internal/svc"
 
 	"github.com/zeromicro/go-zero/rest"
@@ -18,19 +17,9 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Middleware{serverCtx.Auth},
 			[]rest.Route{
 				{
-					Method:  http.MethodOptions,
-					Path:    "/api/note/:noteId",
-					Handler: httpx.PreflightHandler(),
-				},
-				{
 					Method:  http.MethodGet,
 					Path:    "/api/note/:noteId",
 					Handler: GetNoteHandler(serverCtx),
-				},
-				{
-					Method:  http.MethodOptions,
-					Path:    "/api/note/create",
-					Handler: httpx.PreflightHandler(),
 				},
 				{
 					Method:  http.MethodPost,
@@ -38,19 +27,9 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Handler: CreateNoteHandler(serverCtx),
 				},
 				{
-					Method:  http.MethodOptions,
-					Path:    "/api/note/save",
-					Handler: httpx.PreflightHandler(),
-				},
-				{
 					Method:  http.MethodPost,
 					Path:    "/api/note/save",
 					Handler: SaveNoteHandler(serverCtx),
-				},
-				{
-					Method:  http.MethodOptions,
-					Path:    "/api/user/notes",
-					Handler: httpx.PreflightHandler(),
 				},
 				{
 					Method:  http.MethodGet,

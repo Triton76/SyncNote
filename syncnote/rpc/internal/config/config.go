@@ -8,6 +8,6 @@ import (
 type Config struct {
 	zrpc.RpcServerConf
 
-	DataSource string `json:"DataSource"`
+	DataSource string          `json:"DataSource"`
 	CacheRedis cache.CacheConf `json:"CacheRedis"`
 }

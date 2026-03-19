@@ -37,24 +37,24 @@ func (l *GetUserNotesLogic) GetUserNotes(in *syncnoterpc.UserNotesReq) (*syncnot
 	//提前分配内存节省性能。
 	respNotes := make([]*syncnoterpc.NoteSummary, 0, len(notesList))
 
-	for _, note:= range notesList {
-		
+	for _, note := range notesList {
+
 		//在Model层用[]*Notes就记得需要判空，否则不需要下面这段判空代码。
 		if note == nil {
 			continue
 		}
 
-		summary := &syncnoterpc.NoteSummary {
-			NoteId: note.NoteId,
-			Title: note.Title,
-			Version: int64(note.Version),
+		summary := &syncnoterpc.NoteSummary{
+			NoteId:       note.NoteId,
+			Title:        note.Title,
+			Version:      int64(note.Version),
 			LastModified: note.LastModified,
 		}
 
 		respNotes = append(respNotes, summary)
 	}
 
-	return &syncnoterpc.UserNotesResp {
+	return &syncnoterpc.UserNotesResp{
 		Notes: respNotes,
 	}, nil
 }

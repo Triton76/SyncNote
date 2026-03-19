@@ -8,7 +8,7 @@ import (
 )
 
 type ServiceContext struct {
-	Config    config.Config
+	Config     config.Config
 	NotesModel model.NotesModel
 }
 
@@ -17,7 +17,7 @@ func NewServiceContext(c config.Config) *ServiceContext {
 	conn := sqlx.NewMysql(c.DataSource)
 	notesModel := model.NewNotesModel(conn, c.CacheRedis)
 	return &ServiceContext{
-		Config:    c,
+		Config:     c,
 		NotesModel: notesModel,
 	}
 }

@@ -1,0 +1,197 @@
+syntax = "proto3";
+
+package syncnoterpc;
+
+option go_package = "./syncnoterpc";
+
+enum SaveCode {
+  SAVE_CODE_UNSPECIFIED       = 0;
+  SAVE_CODE_OK                = 1;
+  SAVE_CODE_VERSION_CONFLICT  = 2; // 对应 expected_version 不匹配
+  SAVE_CODE_NOT_FOUND         = 3;
+  SAVE_CODE_INVALID_PARAM     = 4;
+  SAVE_CODE_PERMISSION_DENIED = 5; // 新增：权限不足
+}
+
+// 权限角色 (对应 DB: role IN ('owner', 'admin', 'editor', 'viewer'))
+enum Role {
+  ROLE_UNSPECIFIED = 0;
+  ROLE_OWNER       = 1;
+  ROLE_ADMIN       = 2;
+  ROLE_EDITOR      = 3;
+  ROLE_VIEWER      = 4;
+}
+
+// 权限状态 (对应 DB: status IN ('active', 'revoked', 'pending'))
+enum PermissionStatus {
+  PERMISSION_STATUS_UNSPECIFIED = 0;
+  PERMISSION_STATUS_ACTIVE      = 1;
+  PERMISSION_STATUS_REVOKED     = 2;
+  PERMISSION_STATUS_PENDING     = 3;
+}
+
+// 协作事件类型 (对应 DB: event_type CHECK (...))
+enum EventType {
+  EVENT_TYPE_UNSPECIFIED        = 0;
+  EVENT_TYPE_NOTE_CREATED       = 1;
+  EVENT_TYPE_NOTE_UPDATED       = 2;
+  EVENT_TYPE_NOTE_DELETED       = 3;
+  EVENT_TYPE_PERMISSION_GRANTED = 4;
+  EVENT_TYPE_PERMISSION_REVOKED = 5;
+  EVENT_TYPE_CONFLICT_DETECTED  = 6;
+  EVENT_TYPE_VIEW_STARTED       = 7;
+  EVENT_TYPE_VIEW_ENDED         = 8;
+}
+
+// ================= Messages: Note Core =================
+
+message CreateNoteReq {
+  string user_id = 1 [json_name = "userId"]; // CHAR(32)
+  string title   = 2;
+  string content = 3;
+}
+
+message NoteReq {
+  string note_id = 1 [json_name = "noteId"]; // CHAR(32)
+}
+
+message SaveNoteReq {
+  string note_id          = 1 [json_name = "noteId"];
+  string user_id          = 2 [json_name = "userId"];
+  string content          = 3;
+  int64  expected_version = 4 [json_name = "expectedVersion"];
+  string title            = 5 [json_name = "title"];
+  // 不需要传 permission_id，RPC 层会根据 user_id + note_id 去查 note_permissions 表校验
+}
+
+message NoteResp {
+  string note_id       = 1 [json_name = "noteId"];
+  string user_id       = 2 [json_name = "userId"]; // Owner ID
+  string title         = 3;
+  string content       = 4;
+  int64  version       = 5;
+  int64  last_modified = 6 [json_name = "lastModified"];
+}
+
+message NoteSummary {
+  string note_id       = 1 [json_name = "noteId"];
+  string title         = 2;
+  int64  version       = 3;
+  int64  last_modified = 4 [json_name = "lastModified"];
+  string role          = 5 [json_name = "role"]; // 当前用户对该笔记的角色
+}
+
+message UserNotesReq {
+  string user_id = 1 [json_name = "userId"];
+  // 可选：增加分页或过滤条件
+}
+
+message UserNotesResp {
+  repeated NoteSummary notes = 1;
+}
+
+message SaveNoteResp {
+  bool     success        = 1;
+  SaveCode code           = 2;
+  string   message        = 3;
+  NoteResp note           = 4;
+  int64    latest_version = 5 [json_name = "latestVersion"];
+}
+
+// ================= Messages: Permissions (New) =================
+
+// 对应 note_permissions 表的一条记录
+message PermissionInfo {
+  string           permission_id = 1 [json_name = "permissionId"];
+  string           note_id       = 2 [json_name = "noteId"];
+  string           user_id       = 3 [json_name = "userId"]; // 被授权用户
+  string           team_id       = 4 [json_name = "teamId"]; // 被授权团队
+  string           granted_by    = 5 [json_name = "grantedBy"];
+  Role             role          = 6;
+  PermissionStatus status        = 7;
+  int64            granted_at    = 8 [json_name = "grantedAt"];
+  int64            revoked_at    = 9 [json_name = "revokedAt"];
+}
+
+// 请求：授予/更新权限
+message GrantPermissionReq {
+  string note_id        = 1 [json_name = "noteId"];
+  string operator_id    = 2 [json_name = "operatorId"]; // 执行操作的人 (必须是 owner/admin)
+  string target_user_id = 3 [json_name = "targetUserId"]; // 可选：针对用户
+  string target_team_id = 4 [json_name = "targetTeamId"]; // 可选：针对团队
+  Role   role           = 5;
+  // 注意：user_id 和 team_id 必须二选一，逻辑在 Service 层校验
+}
+
+// 请求：撤销权限
+message RevokePermissionReq {
+  string note_id        = 1 [json_name = "noteId"];
+  string operator_id    = 2 [json_name = "operatorId"];
+  string target_user_id = 3 [json_name = "targetUserId"]; // 可选
+  string target_team_id = 4 [json_name = "targetTeamId"]; // 可选
+}
+
+// 请求：查询笔记的权限列表
+message ListPermissionsReq {
+  string note_id     = 1 [json_name = "noteId"];
+  string operator_id = 2 [json_name = "operatorId"]; // 用于校验是否有权限查看列表
+}
+
+message ListPermissionsResp {
+  repeated PermissionInfo permissions = 1;
+}
+
+message PermissionResp {
+  bool           success    = 1;
+  string         message    = 2;
+  PermissionInfo permission = 3; // 如果是 Grant，返回新权限信息
+}
+
+// ================= Messages: Collaboration Events (New) =================
+
+// 对应 collaboration_events 表的一条记录
+message CollaborationEvent {
+  string    event_id      = 1 [json_name = "eventId"];
+  string    note_id       = 2 [json_name = "noteId"];
+  int64     event_seq     = 3 [json_name = "eventSeq"];
+  EventType event_type    = 4 [json_name = "eventType"];
+  string    operator_id   = 5 [json_name = "operatorId"];
+  string    operator_name = 6 [json_name = "operatorName"];
+  string    payload       = 7; // JSON 字符串，对应 DB 的 JSON 类型
+  int64     note_version  = 8 [json_name = "noteVersion"];
+  bool      is_conflict   = 9 [json_name = "isConflict"];
+  int64     created_at    = 10 [json_name = "createdAt"];
+}
+
+message GetNoteEventsReq {
+  string note_id   = 1 [json_name = "noteId"];
+  int64  start_seq = 2 [json_name = "startSeq"]; // 从哪个序列号开始查
+  int32  limit     = 3 [json_name = "limit"]; // 限制返回数量
+}
+
+message GetNoteEventsResp {
+  repeated CollaborationEvent events   = 1;
+  bool                        has_more = 2 [json_name = "hasMore"];
+}
+
+// ================= Service Definition =================
+
+service Syncnoterpc {
+  // --- Core Note Operations ---
+  rpc CreateNote(CreateNoteReq) returns (NoteResp);
+  rpc GetNote(NoteReq) returns (NoteResp);
+  rpc SaveNote(SaveNoteReq) returns (SaveNoteResp);
+  rpc GetUserNotes(UserNotesReq) returns (UserNotesResp);
+
+  // --- Permission Management (对应 note_permissions 表) ---
+  // 授予或更新权限
+  rpc GrantPermission(GrantPermissionReq) returns (PermissionResp);
+  // 撤销权限
+  rpc RevokePermission(RevokePermissionReq) returns (PermissionResp);
+  // 获取笔记的所有权限列表
+  rpc ListPermissions(ListPermissionsReq) returns (ListPermissionsResp);
+
+  // --- Collaboration History (对应 collaboration_events 表) ---
+  // 获取笔记的操作历史/事件流
+  rpc GetNoteEvents(GetNoteEventsReq) returns (GetNoteEventsResp);
+}
