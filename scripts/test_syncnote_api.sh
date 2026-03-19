@@ -17,7 +17,7 @@ need_cmd() {
 need_cmd curl
 need_cmd jq
 
-echo "[0/5] Register auth user and get token..."
+echo "[0/9] Register auth user and get token..."
 auth_resp="$({
   curl -sS -X POST "$AUTH_HOST/auth/register" \
     -H "Content-Type: application/json" \
@@ -32,7 +32,7 @@ if [[ -z "$token" || -z "$auth_user_id" ]]; then
   exit 1
 fi
 
-echo "[1/5] Create note via API..."
+echo "[1/9] Create note via API..."
 create_resp="$({
   curl -sS -X POST "$API_HOST/api/note/create" \
     -H "Authorization: Bearer $token" \
@@ -50,7 +50,7 @@ fi
 
 echo "Created note_id=$note_id version=$version"
 
-echo "[2/5] Get note via API..."
+echo "[2/9] Get note via API..."
 get_resp="$(curl -sS -H "Authorization: Bearer $token" "$API_HOST/api/note/$note_id")"
 echo "$get_resp" | jq . >/dev/null
 get_note_id="$(echo "$get_resp" | jq -r '.noteId // .NoteId // empty')"
@@ -59,7 +59,7 @@ if [[ "$get_note_id" != "$note_id" ]]; then
   exit 1
 fi
 
-echo "[3/5] Save note success path..."
+echo "[3/9] Save note success path..."
 save_resp="$({
   curl -sS -X POST "$API_HOST/api/note/save" \
     -H "Authorization: Bearer $token" \
@@ -79,7 +79,7 @@ if [[ -z "$new_version" ]]; then
   exit 1
 fi
 
-echo "[4/5] Save note conflict path..."
+echo "[4/9] Save note conflict path..."
 conflict_resp="$({
   curl -sS -X POST "$API_HOST/api/note/save" \
     -H "Authorization: Bearer $token" \
@@ -94,13 +94,62 @@ if [[ "$conflict_code" != "SAVE_CODE_VERSION_CONFLICT" ]]; then
   exit 1
 fi
 
-echo "[5/5] Get user notes via API..."
+echo "[5/9] Get user notes via API..."
 list_resp="$(curl -sS -H "Authorization: Bearer $token" "$API_HOST/api/user/notes")"
 echo "$list_resp" | jq . >/dev/null
 found="$(echo "$list_resp" | jq -r --arg id "$note_id" '[(.notes // .Notes // [])[]? | select((.noteId // .NoteId // "") == $id)] | length')"
 if [[ "$found" == "0" ]]; then
   echo "GetUserNotes did not return created note"
   echo "Response: $list_resp"
+  exit 1
+fi
+
+target_user_id="collab_user_001"
+
+echo "[6/9] Grant permission via API..."
+grant_resp="$({
+  curl -sS -X POST "$API_HOST/api/permission/grant" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d "{\"noteId\":\"$note_id\",\"targetUserId\":\"$target_user_id\",\"role\":\"editor\"}"
+} )"
+echo "$grant_resp" | jq . >/dev/null
+grant_success="$(echo "$grant_resp" | jq -r '(.success // .Success // false | tostring)')"
+if [[ "$grant_success" != "true" ]]; then
+  echo "GrantPermission failed: $grant_resp"
+  exit 1
+fi
+
+echo "[7/9] List permissions via API..."
+perm_list_resp="$(curl -sS -H "Authorization: Bearer $token" "$API_HOST/api/permission/list/$note_id")"
+echo "$perm_list_resp" | jq . >/dev/null
+perm_found="$(echo "$perm_list_resp" | jq -r --arg uid "$target_user_id" '[(.permissions // .Permissions // [])[]? | select((.userId // .UserId // "") == $uid and (.status // .Status // "") == "active")] | length')"
+if [[ "$perm_found" == "0" ]]; then
+  echo "ListPermissions did not return expected active permission"
+  echo "Response: $perm_list_resp"
+  exit 1
+fi
+
+echo "[8/9] Revoke permission via API..."
+revoke_resp="$({
+  curl -sS -X POST "$API_HOST/api/permission/revoke" \
+    -H "Authorization: Bearer $token" \
+    -H "Content-Type: application/json" \
+    -d "{\"noteId\":\"$note_id\",\"targetUserId\":\"$target_user_id\"}"
+} )"
+echo "$revoke_resp" | jq . >/dev/null
+revoke_success="$(echo "$revoke_resp" | jq -r '(.success // .Success // false | tostring)')"
+if [[ "$revoke_success" != "true" ]]; then
+  echo "RevokePermission failed: $revoke_resp"
+  exit 1
+fi
+
+echo "[9/9] Get note events via API..."
+events_resp="$(curl -sS -H "Authorization: Bearer $token" "$API_HOST/api/note/$note_id/events?startSeq=0&limit=20")"
+echo "$events_resp" | jq . >/dev/null
+if ! echo "$events_resp" | jq -e '.events // .Events' >/dev/null 2>&1; then
+  echo "GetNoteEvents response missing events field"
+  echo "Response: $events_resp"
   exit 1
 fi
 

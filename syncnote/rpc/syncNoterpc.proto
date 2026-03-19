@@ -53,6 +53,7 @@ message CreateNoteReq {
 
 message NoteReq {
   string note_id = 1 [json_name = "noteId"]; // CHAR(32)
+  string user_id = 2 [json_name = "userId"]; // 当前请求用户ID（用于读权限校验）
 }
 
 message SaveNoteReq {
@@ -115,11 +116,12 @@ message PermissionInfo {
 
 // 请求：授予/更新权限
 message GrantPermissionReq {
-  string note_id        = 1 [json_name = "noteId"];
-  string operator_id    = 2 [json_name = "operatorId"]; // 执行操作的人 (必须是 owner/admin)
-  string target_user_id = 3 [json_name = "targetUserId"]; // 可选：针对用户
-  string target_team_id = 4 [json_name = "targetTeamId"]; // 可选：针对团队
-  Role   role           = 5;
+  string note_id           = 1 [json_name = "noteId"];
+  string operator_id       = 2 [json_name = "operatorId"]; // 执行操作的人 (必须是 owner/admin)
+  string target_user_id    = 3 [json_name = "targetUserId"]; // 可选：针对用户
+  string target_team_id    = 4 [json_name = "targetTeamId"]; // 可选：针对团队
+  Role   role              = 5;
+  string target_user_email = 6 [json_name = "targetUserEmail"]; // 可选：按邮箱定位用户
   // 注意：user_id 和 team_id 必须二选一，逻辑在 Service 层校验
 }
 
@@ -174,6 +176,24 @@ message GetNoteEventsResp {
   bool                        has_more = 2 [json_name = "hasMore"];
 }
 
+// ================= Messages: Teams =================
+
+message TeamInfo {
+  string team_id   = 1 [json_name = "teamId"];
+  string team_name = 2 [json_name = "teamName"];
+  string role      = 3;
+  string status    = 4;
+  int64  joined_at = 5 [json_name = "joinedAt"];
+}
+
+message ListMyTeamsReq {
+  string user_id = 1 [json_name = "userId"];
+}
+
+message ListMyTeamsResp {
+  repeated TeamInfo teams = 1;
+}
+
 // ================= Service Definition =================
 
 service Syncnoterpc {
@@ -194,4 +214,8 @@ service Syncnoterpc {
   // --- Collaboration History (对应 collaboration_events 表) ---
   // 获取笔记的操作历史/事件流
   rpc GetNoteEvents(GetNoteEventsReq) returns (GetNoteEventsResp);
+
+  // --- Team Membership ---
+  // 获取当前用户已加入团队
+  rpc ListMyTeams(ListMyTeamsReq) returns (ListMyTeamsResp);
 }

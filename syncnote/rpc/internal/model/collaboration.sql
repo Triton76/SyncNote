@@ -1,11 +1,35 @@
 CREATE DATABASE IF NOT EXISTS syncnote DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE syncnote;
+CREATE TABLE IF NOT EXISTS teams (
+	team_id CHAR(36) NOT NULL COMMENT '团队ID',
+	name VARCHAR(128) NOT NULL COMMENT '团队名称',
+	owner_id CHAR(36) NOT NULL COMMENT '团队拥有者用户ID',
+	status VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT 'active | archived',
+	created_at BIGINT NOT NULL DEFAULT 0 COMMENT '创建时间戳(ms)',
+	updated_at BIGINT NOT NULL DEFAULT 0 COMMENT '更新时间戳(ms)',
+	PRIMARY KEY (team_id),
+	KEY idx_owner_id (owner_id),
+	UNIQUE KEY uk_team_name_owner (name, owner_id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '团队表';
+CREATE TABLE IF NOT EXISTS team_members (
+	team_id CHAR(36) NOT NULL COMMENT '团队ID',
+	user_id CHAR(36) NOT NULL COMMENT '用户ID',
+	role VARCHAR(20) NOT NULL DEFAULT 'member' COMMENT 'owner | admin | member',
+	status VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT 'active | invited | removed',
+	joined_at BIGINT NOT NULL DEFAULT 0 COMMENT '加入时间戳(ms)',
+	PRIMARY KEY (team_id, user_id),
+	KEY idx_user_id (user_id),
+	KEY idx_team_status (team_id, status),
+	KEY idx_user_status (user_id, status),
+	CONSTRAINT chk_member_role CHECK (role IN ('owner', 'admin', 'member')),
+	CONSTRAINT chk_member_status CHECK (status IN ('active', 'invited', 'removed'))
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '团队成员关系表';
 CREATE TABLE IF NOT EXISTS note_permissions (
 	permission_id CHAR(32) NOT NULL COMMENT '权限记录唯一ID',
 	note_id CHAR(32) NOT NULL COMMENT '笔记ID',
-	user_id CHAR(32) DEFAULT NULL COMMENT '被授权用户ID，user_id 和 team_id 二选一',
-	team_id CHAR(32) DEFAULT NULL COMMENT '被授权团队ID（团队成员自动继承权限）',
-	granted_by CHAR(32) NOT NULL COMMENT '授权者ID（note owner or admin）',
+	user_id CHAR(36) DEFAULT NULL COMMENT '被授权用户ID，user_id 和 team_id 二选一',
+	team_id CHAR(36) DEFAULT NULL COMMENT '被授权团队ID（团队成员自动继承权限）',
+	granted_by CHAR(36) NOT NULL COMMENT '授权者ID（note owner or admin）',
 	role VARCHAR(20) NOT NULL DEFAULT 'viewer' COMMENT '权限角色：owner | admin | editor | viewer',
 	status VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT 'active | revoked | pending',
 	granted_at BIGINT NOT NULL DEFAULT 0 COMMENT '授权时间戳(ms)',
@@ -36,7 +60,7 @@ CREATE TABLE IF NOT EXISTS collaboration_events (
 	note_id CHAR(32) NOT NULL COMMENT '操作的笔记ID',
 	event_seq BIGINT NOT NULL COMMENT '该笔记内事件序列号（单调递增）',
 	event_type VARCHAR(30) NOT NULL COMMENT '事件类型',
-	operator_id CHAR(32) NOT NULL COMMENT '操作者用户ID',
+	operator_id CHAR(36) NOT NULL COMMENT '操作者用户ID',
 	operator_name VARCHAR(255) DEFAULT NULL COMMENT '操作者用户名（冗余字段）',
 	payload JSON DEFAULT NULL COMMENT '事件具体内容',
 	note_version BIGINT DEFAULT NULL COMMENT '操作后笔记版本号',

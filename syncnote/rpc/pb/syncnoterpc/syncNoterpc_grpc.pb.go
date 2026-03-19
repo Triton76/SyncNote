@@ -27,6 +27,7 @@ const (
 	Syncnoterpc_RevokePermission_FullMethodName = "/syncnoterpc.Syncnoterpc/RevokePermission"
 	Syncnoterpc_ListPermissions_FullMethodName  = "/syncnoterpc.Syncnoterpc/ListPermissions"
 	Syncnoterpc_GetNoteEvents_FullMethodName    = "/syncnoterpc.Syncnoterpc/GetNoteEvents"
+	Syncnoterpc_ListMyTeams_FullMethodName      = "/syncnoterpc.Syncnoterpc/ListMyTeams"
 )
 
 // SyncnoterpcClient is the client API for Syncnoterpc service.
@@ -48,6 +49,9 @@ type SyncnoterpcClient interface {
 	// --- Collaboration History (对应 collaboration_events 表) ---
 	// 获取笔记的操作历史/事件流
 	GetNoteEvents(ctx context.Context, in *GetNoteEventsReq, opts ...grpc.CallOption) (*GetNoteEventsResp, error)
+	// --- Team Membership ---
+	// 获取当前用户已加入团队
+	ListMyTeams(ctx context.Context, in *ListMyTeamsReq, opts ...grpc.CallOption) (*ListMyTeamsResp, error)
 }
 
 type syncnoterpcClient struct {
@@ -138,6 +142,16 @@ func (c *syncnoterpcClient) GetNoteEvents(ctx context.Context, in *GetNoteEvents
 	return out, nil
 }
 
+func (c *syncnoterpcClient) ListMyTeams(ctx context.Context, in *ListMyTeamsReq, opts ...grpc.CallOption) (*ListMyTeamsResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMyTeamsResp)
+	err := c.cc.Invoke(ctx, Syncnoterpc_ListMyTeams_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SyncnoterpcServer is the server API for Syncnoterpc service.
 // All implementations must embed UnimplementedSyncnoterpcServer
 // for forward compatibility.
@@ -157,6 +171,9 @@ type SyncnoterpcServer interface {
 	// --- Collaboration History (对应 collaboration_events 表) ---
 	// 获取笔记的操作历史/事件流
 	GetNoteEvents(context.Context, *GetNoteEventsReq) (*GetNoteEventsResp, error)
+	// --- Team Membership ---
+	// 获取当前用户已加入团队
+	ListMyTeams(context.Context, *ListMyTeamsReq) (*ListMyTeamsResp, error)
 	mustEmbedUnimplementedSyncnoterpcServer()
 }
 
@@ -190,6 +207,9 @@ func (UnimplementedSyncnoterpcServer) ListPermissions(context.Context, *ListPerm
 }
 func (UnimplementedSyncnoterpcServer) GetNoteEvents(context.Context, *GetNoteEventsReq) (*GetNoteEventsResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetNoteEvents not implemented")
+}
+func (UnimplementedSyncnoterpcServer) ListMyTeams(context.Context, *ListMyTeamsReq) (*ListMyTeamsResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListMyTeams not implemented")
 }
 func (UnimplementedSyncnoterpcServer) mustEmbedUnimplementedSyncnoterpcServer() {}
 func (UnimplementedSyncnoterpcServer) testEmbeddedByValue()                     {}
@@ -356,6 +376,24 @@ func _Syncnoterpc_GetNoteEvents_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Syncnoterpc_ListMyTeams_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMyTeamsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SyncnoterpcServer).ListMyTeams(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Syncnoterpc_ListMyTeams_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SyncnoterpcServer).ListMyTeams(ctx, req.(*ListMyTeamsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Syncnoterpc_ServiceDesc is the grpc.ServiceDesc for Syncnoterpc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -394,6 +432,10 @@ var Syncnoterpc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNoteEvents",
 			Handler:    _Syncnoterpc_GetNoteEvents_Handler,
+		},
+		{
+			MethodName: "ListMyTeams",
+			Handler:    _Syncnoterpc_ListMyTeams_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

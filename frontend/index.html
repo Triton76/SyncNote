@@ -3,106 +3,199 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SyncNote Demo</title>
+  <title>SyncNote Workbench</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
   <div class="bg-layer"></div>
-  <main class="app-shell">
-    <header class="topbar">
-      <h1>SyncNote Demo</h1>
-      <p>最小可用前端：鉴权 + 笔记 CRUD 主流程</p>
+  <main id="app" class="shell">
+    <header class="header">
+      <div>
+        <h1>SyncNote Workbench</h1>
+        <p>可联调的前端工作台，覆盖认证、笔记、协作权限和事件追踪。</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn ghost" @click="checkConnection" :disabled="loading">连接检测</button>
+        <button class="btn" @click="listNotes" :disabled="loading">刷新数据</button>
+      </div>
     </header>
 
-    <section class="panel config-panel">
-      <h2>服务地址</h2>
-      <div class="grid-2">
+    <div v-if="flash.text" class="flash" :class="flash.type">{{ flash.text }}</div>
+
+    <section class="layout">
+      <aside class="panel sidebar">
+        <h2>环境与账号</h2>
         <label>
           Auth Host
-          <input id="authHost" type="text" value="http://127.0.0.1:8889" />
+          <input v-model.trim="authHost" type="text" />
         </label>
         <label>
           API Host
-          <input id="apiHost" type="text" value="http://127.0.0.1:8888" />
+          <input v-model.trim="apiHost" type="text" />
         </label>
-      </div>
-      <button id="saveHostBtn" class="btn">保存地址</button>
-    </section>
+        <div class="actions compact">
+          <button class="btn" @click="saveHosts">保存地址</button>
+        </div>
 
-    <section class="panel auth-panel">
-      <h2>注册 / 登录</h2>
-      <p>登录字段说明：当前后端使用 loginId（邮箱）进行登录，请在邮箱框填写已注册邮箱。</p>
-      <div class="grid-2">
+        <hr />
+
         <label>
           用户名
-          <input id="username" type="text" placeholder="demo_user" />
+          <input v-model.trim="username" type="text" placeholder="demo_user" />
         </label>
         <label>
-          邮箱
-          <input id="email" type="email" placeholder="demo@example.com" />
+          邮箱 / loginId
+          <input v-model.trim="email" type="text" placeholder="demo@example.com" />
         </label>
-      </div>
-      <div class="grid-2">
         <label>
           密码
-          <input id="password" type="password" placeholder="123456" />
+          <input v-model="password" type="password" placeholder="123456" />
         </label>
         <label>
           Token
-          <input id="token" type="text" placeholder="登录后自动填充" />
+          <textarea v-model="token" rows="4" placeholder="登录后自动填充"></textarea>
         </label>
-      </div>
-      <div class="actions">
-        <button id="registerBtn" class="btn">注册并拿 Token</button>
-        <button id="loginBtn" class="btn ghost">登录并拿 Token</button>
-      </div>
-    </section>
 
-    <section class="panel notes-panel">
-      <h2>笔记操作</h2>
-      <div class="grid-2">
-        <label>
-          标题
-          <input id="noteTitle" type="text" placeholder="我的第一条笔记" />
-        </label>
-        <label>
-          Note ID
-          <input id="noteId" type="text" placeholder="创建/选择后自动填充" />
-        </label>
-      </div>
-      <label>
-        内容
-        <textarea id="noteContent" rows="8" placeholder="输入笔记内容"></textarea>
-      </label>
-      <div class="grid-2">
-        <label>
-          预期版本 expectedVersion
-          <input id="expectedVersion" type="number" value="1" min="1" />
-        </label>
-        <label>
-          当前版本（只读）
-          <input id="currentVersion" type="number" value="0" readonly />
-        </label>
-      </div>
-      <div class="actions">
-        <button id="createBtn" class="btn">创建笔记</button>
-        <button id="getBtn" class="btn ghost">读取笔记</button>
-        <button id="saveBtn" class="btn">保存笔记</button>
-        <button id="listBtn" class="btn ghost">拉取我的笔记列表</button>
-      </div>
-    </section>
+        <div class="actions compact">
+          <button class="btn" @click="register" :disabled="loading">注册</button>
+          <button class="btn ghost" @click="login" :disabled="loading">登录</button>
+          <button class="btn ghost" @click="copyToken" :disabled="!token">复制Token</button>
+          <button class="btn danger" @click="logout">退出</button>
+        </div>
 
-    <section class="panel list-panel">
-      <h2>我的笔记</h2>
-      <ul id="notesList" class="notes-list"></ul>
+        <div class="meta">
+          <span class="badge" :class="token ? 'ok' : 'warn'">{{ token ? '已认证' : '未认证' }}</span>
+          <span class="badge">{{ connText }}</span>
+        </div>
+      </aside>
+
+      <section class="panel workspace">
+        <div class="toolbar">
+          <h2>笔记工作区</h2>
+          <div class="actions compact">
+            <button class="btn" @click="createNote" :disabled="loading">新建</button>
+            <button class="btn ghost" @click="getNote" :disabled="loading">读取</button>
+            <button class="btn" @click="saveNote" :disabled="loading">保存</button>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <label>
+            Note ID
+            <input v-model.trim="noteId" type="text" placeholder="创建后自动写入" />
+          </label>
+          <label>
+            标题
+            <input v-model.trim="noteTitle" type="text" placeholder="输入标题" />
+          </label>
+        </div>
+
+        <label>
+          内容
+          <textarea v-model="noteContent" rows="13" placeholder="在这里写笔记内容"></textarea>
+        </label>
+
+        <div class="grid-2">
+          <label>
+            expectedVersion
+            <input v-model.number="expectedVersion" type="number" min="1" />
+          </label>
+          <label>
+            当前版本
+            <input :value="currentVersion" type="number" readonly />
+          </label>
+        </div>
+
+        <h3>我的笔记</h3>
+        <ul class="notes-list">
+          <li v-for="item in notes" :key="item.noteId" :class="{ active: noteId === item.noteId }" @click="pickNote(item)">
+            <div class="row-main">{{ item.title || '(untitled)' }}</div>
+            <small>{{ item.noteId }} | v{{ item.version || 0 }}</small>
+          </li>
+        </ul>
+      </section>
+
+      <section class="panel sidepanel">
+        <h2>协作</h2>
+        <div class="grid-1">
+          <label>
+            目标用户 ID
+            <input v-model.trim="targetUserId" type="text" placeholder="collab_user_001" />
+          </label>
+          <label>
+            目标用户邮箱
+            <input v-model.trim="targetUserEmail" type="text" placeholder="collab@example.com" />
+          </label>
+          <label>
+            目标团队 ID
+            <input v-model.trim="targetTeamId" type="text" placeholder="可留空" />
+          </label>
+          <label>
+            角色
+            <select v-model="permissionRole">
+              <option value="viewer">viewer</option>
+              <option value="editor">editor</option>
+              <option value="admin">admin</option>
+            </select>
+          </label>
+        </div>
+        <div class="actions compact">
+          <button class="btn" @click="grantPermission" :disabled="loading">授权</button>
+          <button class="btn ghost" @click="revokePermission" :disabled="loading">撤权</button>
+          <button class="btn ghost" @click="listPermissions" :disabled="loading">刷新权限</button>
+          <button class="btn ghost" @click="listMyTeams" :disabled="loading">刷新团队</button>
+        </div>
+
+        <h3>我加入的团队</h3>
+        <ul class="notes-list tight">
+          <li v-for="item in myTeams" :key="item.teamId">
+            <div class="row-main">{{ item.teamName || item.teamId }}</div>
+            <small>{{ item.teamId }} | {{ item.role }} / {{ item.status }}</small>
+          </li>
+        </ul>
+
+        <h3>权限列表</h3>
+        <ul class="notes-list tight">
+          <li v-for="item in permissions" :key="item.permissionId">
+            <div class="row-main">{{ item.userId || item.teamId || '(none)' }}</div>
+            <small>{{ item.role }} / {{ item.status }}</small>
+          </li>
+        </ul>
+
+        <div class="grid-2 compact-gap">
+          <label>
+            startSeq
+            <input v-model.number="eventStartSeq" type="number" min="0" />
+          </label>
+          <label>
+            limit
+            <input v-model.number="eventLimit" type="number" min="1" max="200" />
+          </label>
+        </div>
+        <div class="actions compact">
+          <button class="btn ghost" @click="listEvents" :disabled="loading">刷新事件</button>
+        </div>
+
+        <h3>事件流</h3>
+        <ul class="notes-list tight">
+          <li v-for="item in events" :key="item.eventId + '-' + item.eventSeq">
+            <div class="row-main">#{{ item.eventSeq }} {{ item.eventType }}</div>
+            <small>{{ item.operatorId }}</small>
+          </li>
+        </ul>
+      </section>
     </section>
 
     <section class="panel log-panel">
-      <h2>响应日志</h2>
-      <pre id="logOutput" class="log-output"></pre>
+      <div class="toolbar">
+        <h2>活动日志</h2>
+        <button class="btn ghost" @click="clearLogs">清空</button>
+      </div>
+      <pre class="log-output">{{ logs.join('\n\n') }}</pre>
     </section>
   </main>
 
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>

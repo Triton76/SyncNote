@@ -3,9 +3,59 @@
 
 package types
 
+type CollaborationEvent struct {
+	EventId      string
+	NoteId       string
+	EventSeq     int64
+	EventType    string
+	OperatorId   string
+	OperatorName string
+	Payload      string
+	NoteVersion  int64
+	IsConflict   bool
+	CreatedAt    int64
+}
+
 type CreateNoteReq struct {
 	Title   string `json:"title"`
 	Content string `json:"content,omitempty"`
+}
+
+type EmptyResp struct {
+}
+
+type GetNoteEventsReq struct {
+	NoteId   string `path:"noteId"`
+	StartSeq int64  `form:"startSeq,optional"`
+	Limit    int32  `form:"limit,optional"`
+}
+
+type GetNoteEventsResp struct {
+	Events  []CollaborationEvent
+	HasMore bool
+}
+
+type GrantPermissionReq struct {
+	NoteId          string `json:"noteId"`
+	TargetUserId    string `json:"targetUserId,optional"`
+	TargetUserEmail string `json:"targetUserEmail,optional"`
+	TargetTeamId    string `json:"targetTeamId,optional"`
+	Role            string `json:"role"`
+}
+
+type ListPermissionsReq struct {
+	NoteId string `path:"noteId"`
+}
+
+type ListPermissionsResp struct {
+	Permissions []PermissionInfo
+}
+
+type MyTeamsReq struct {
+}
+
+type MyTeamsResp struct {
+	Teams []TeamInfo
 }
 
 type NoteReq struct {
@@ -28,6 +78,30 @@ type NoteSummary struct {
 	LastModified int64
 }
 
+type PermissionInfo struct {
+	PermissionId string
+	NoteId       string
+	UserId       string
+	TeamId       string
+	GrantedBy    string
+	Role         string
+	Status       string
+	GrantedAt    int64
+	RevokedAt    int64
+}
+
+type PermissionResp struct {
+	Success    bool
+	Message    string
+	Permission *PermissionInfo
+}
+
+type RevokePermissionReq struct {
+	NoteId       string `json:"noteId"`
+	TargetUserId string `json:"targetUserId,optional"`
+	TargetTeamId string `json:"targetTeamId,optional"`
+}
+
 type SaveNoteReq struct {
 	NoteId          string `json:"noteId"`
 	Title           string `json:"title,omitempty"`
@@ -41,6 +115,14 @@ type SaveNoteResp struct {
 	Message       string
 	Note          *NoteResp `json:"note,omitempty"`
 	LatestVersion int64     `json:"latestVersion,omitempty"`
+}
+
+type TeamInfo struct {
+	TeamId   string
+	TeamName string
+	Role     string
+	Status   string
+	JoinedAt int64
 }
 
 type UserNotesReq struct {

@@ -67,3 +67,9 @@ func (s *SyncnoterpcServer) GetNoteEvents(ctx context.Context, in *syncnoterpc.G
 	l := logic.NewGetNoteEventsLogic(ctx, s.svcCtx)
 	return l.GetNoteEvents(in)
 }
+
+// --- Team Membership ---
+func (s *SyncnoterpcServer) ListMyTeams(ctx context.Context, in *syncnoterpc.ListMyTeamsReq) (*syncnoterpc.ListMyTeamsResp, error) {
+	l := logic.NewListMyTeamsLogic(ctx, s.svcCtx)
+	return l.ListMyTeams(in)
+}

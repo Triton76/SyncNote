@@ -8,12 +8,9 @@ import (
 	"SyncNote/syncnote/api/internal/types"
 	"SyncNote/syncnote/rpc/syncnoterpcclient"
 	"context"
-	"errors"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
-
-var ErrForbiddenNoteAccess = errors.New("forbidden: note does not belong to current user")
 
 type GetNoteLogic struct {
 	logx.Logger
@@ -37,14 +34,11 @@ func (l *GetNoteLogic) GetNote(req *types.NoteReq) (resp *types.NoteResp, err er
 
 	rpcResp, err := l.svcCtx.SyncNoteRpc.GetNote(l.ctx, &syncnoterpcclient.NoteReq{
 		NoteId: req.NoteId,
+		UserId: userID,
 	})
 	if err != nil {
 		return nil, err
 	}
-
-	if rpcResp.UserId != userID {
-		return nil, ErrForbiddenNoteAccess
-	} //这里新加了鉴权逻辑，不然一个受认证的用户A能直接访问用户B的note。
 
 	return &types.NoteResp{
 		NoteId:       rpcResp.NoteId,

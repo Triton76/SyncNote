@@ -247,10 +247,30 @@ wait_for_container_health() {
   return 1
 }
 
+apply_sql_file() {
+  local sql_file="$1"
+  if [[ ! -f "$sql_file" ]]; then
+    echo "[WARN] schema file not found: $sql_file"
+    return 0
+  fi
+
+  echo "[INFO] applying schema: ${sql_file#$ROOT_DIR/}"
+  mysql -h127.0.0.1 -P3306 -uroot -pdevpass123 syncnote <"$sql_file"
+}
+
+bootstrap_mysql_schema() {
+  echo "[STEP] bootstrapping MySQL schema"
+  apply_sql_file "$ROOT_DIR/auth/auth.sql"
+  apply_sql_file "$ROOT_DIR/syncnote/rpc/internal/model/notesmodel.sql"
+  apply_sql_file "$ROOT_DIR/syncnote/rpc/internal/model/collaboration.sql"
+  echo "[OK] MySQL schema is ready"
+}
+
 up() {
   need_cmd docker
   need_cmd go
   need_cmd lsof
+  need_cmd mysql
 
   echo "[STEP] starting infrastructure containers"
   compose up -d etcd redis mysql
@@ -258,6 +278,8 @@ up() {
   wait_for_container_health etcd 40
   wait_for_container_health redis 40
   wait_for_container_health mysql 60
+
+  bootstrap_mysql_schema
 
   echo "[STEP] starting Go services"
   start_go_service "syncnote-rpc" "$ROOT_DIR/syncnote/rpc" "etc/syncnoterpc.yaml" 8080 "$SYNCNOTE_RPC_PID" "$SYNCNOTE_RPC_LOG"

@@ -46,10 +46,117 @@ type SaveNoteResp {
 	LatestVersion int64     `json:"latestVersion,omitempty"`
 }
 
+type GrantPermissionReq {
+	NoteId          string `json:"noteId"`
+	TargetUserId    string `json:"targetUserId,optional"`
+	TargetUserEmail string `json:"targetUserEmail,optional"`
+	TargetTeamId    string `json:"targetTeamId,optional"`
+	Role            string `json:"role"`
+}
+
+type RevokePermissionReq {
+	NoteId       string `json:"noteId"`
+	TargetUserId string `json:"targetUserId,optional"`
+	TargetTeamId string `json:"targetTeamId,optional"`
+}
+
+type ListPermissionsReq {
+	NoteId string `path:"noteId"`
+}
+
+type PermissionInfo {
+	permissionId string
+	noteId       string
+	userId       string
+	teamId       string
+	grantedBy    string
+	role         string
+	status       string
+	grantedAt    int64
+	revokedAt    int64
+}
+
+type PermissionResp {
+	success    bool
+	message    string
+	permission *PermissionInfo
+}
+
+type ListPermissionsResp {
+	permissions []PermissionInfo
+}
+
+type GetNoteEventsReq {
+	NoteId   string `path:"noteId"`
+	StartSeq int64  `form:"startSeq,optional"`
+	Limit    int32  `form:"limit,optional"`
+}
+
+type CollaborationEvent {
+	eventId      string
+	noteId       string
+	eventSeq     int64
+	eventType    string
+	operatorId   string
+	operatorName string
+	payload      string
+	noteVersion  int64
+	isConflict   bool
+	createdAt    int64
+}
+
+type GetNoteEventsResp {
+	events  []CollaborationEvent
+	hasMore bool
+}
+
+type TeamInfo {
+	teamId   string
+	teamName string
+	role     string
+	status   string
+	joinedAt int64
+}
+
+type MyTeamsReq {}
+
+type MyTeamsResp {
+	teams []TeamInfo
+}
+
+type EmptyResp {}
+
 @server (
 	middleware: Auth
 )
 service syncNote-api {
+	@handler OptionsGetNoteHandler
+	options /api/note/:noteId (NoteReq) returns (EmptyResp)
+
+	@handler OptionsCreateNoteHandler
+	options /api/note/create (UserNotesReq) returns (EmptyResp)
+
+	@handler OptionsSaveNoteHandler
+	options /api/note/save (UserNotesReq) returns (EmptyResp)
+
+	@handler OptionsGetUserNotesHandler
+	options /api/user/notes (UserNotesReq) returns (EmptyResp)
+
+	@handler OptionsGetMyTeamsHandler
+	options /api/team/me (MyTeamsReq) returns (EmptyResp)
+
+	@handler OptionsGrantPermissionHandler
+	options /api/permission/grant (UserNotesReq) returns (EmptyResp)
+
+	@handler OptionsRevokePermissionHandler
+	options /api/permission/revoke (UserNotesReq) returns (EmptyResp)
+
+	@handler OptionsListPermissionsHandler
+	options /api/permission/list/:noteId (ListPermissionsReq) returns (EmptyResp)
+
+	@handler OptionsGetNoteEventsHandler
+	options /api/note/:noteId/events (GetNoteEventsReq) returns (EmptyResp)
+
 	@handler GetNoteHandler
 	get /api/note/:noteId (NoteReq) returns (NoteResp)
 
@@ -61,5 +168,20 @@ service syncNote-api {
 
 	@handler GetUserNotesHandler
 	get /api/user/notes (UserNotesReq) returns (UserNotesResp)
+
+	@handler GetMyTeamsHandler
+	get /api/team/me (MyTeamsReq) returns (MyTeamsResp)
+
+	@handler GrantPermissionHandler
+	post /api/permission/grant (GrantPermissionReq) returns (PermissionResp)
+
+	@handler RevokePermissionHandler
+	post /api/permission/revoke (RevokePermissionReq) returns (PermissionResp)
+
+	@handler ListPermissionsHandler
+	get /api/permission/list/:noteId (ListPermissionsReq) returns (ListPermissionsResp)
+
+	@handler GetNoteEventsHandler
+	get /api/note/:noteId/events (GetNoteEventsReq) returns (GetNoteEventsResp)
 }
 

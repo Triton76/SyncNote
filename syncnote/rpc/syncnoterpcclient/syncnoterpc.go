@@ -19,6 +19,8 @@ type (
 	GetNoteEventsReq    = syncnoterpc.GetNoteEventsReq
 	GetNoteEventsResp   = syncnoterpc.GetNoteEventsResp
 	GrantPermissionReq  = syncnoterpc.GrantPermissionReq
+	ListMyTeamsReq      = syncnoterpc.ListMyTeamsReq
+	ListMyTeamsResp     = syncnoterpc.ListMyTeamsResp
 	ListPermissionsReq  = syncnoterpc.ListPermissionsReq
 	ListPermissionsResp = syncnoterpc.ListPermissionsResp
 	NoteReq             = syncnoterpc.NoteReq
@@ -29,6 +31,7 @@ type (
 	RevokePermissionReq = syncnoterpc.RevokePermissionReq
 	SaveNoteReq         = syncnoterpc.SaveNoteReq
 	SaveNoteResp        = syncnoterpc.SaveNoteResp
+	TeamInfo            = syncnoterpc.TeamInfo
 	UserNotesReq        = syncnoterpc.UserNotesReq
 	UserNotesResp       = syncnoterpc.UserNotesResp
 
@@ -46,6 +49,8 @@ type (
 		ListPermissions(ctx context.Context, in *ListPermissionsReq, opts ...grpc.CallOption) (*ListPermissionsResp, error)
 		// --- Collaboration History (对应 collaboration_events 表) ---
 		GetNoteEvents(ctx context.Context, in *GetNoteEventsReq, opts ...grpc.CallOption) (*GetNoteEventsResp, error)
+		// --- Team Membership ---
+		ListMyTeams(ctx context.Context, in *ListMyTeamsReq, opts ...grpc.CallOption) (*ListMyTeamsResp, error)
 	}
 
 	defaultSyncnoterpc struct {
@@ -102,4 +107,10 @@ func (m *defaultSyncnoterpc) ListPermissions(ctx context.Context, in *ListPermis
 func (m *defaultSyncnoterpc) GetNoteEvents(ctx context.Context, in *GetNoteEventsReq, opts ...grpc.CallOption) (*GetNoteEventsResp, error) {
 	client := syncnoterpc.NewSyncnoterpcClient(m.cli.Conn())
 	return client.GetNoteEvents(ctx, in, opts...)
+}
+
+// --- Team Membership ---
+func (m *defaultSyncnoterpc) ListMyTeams(ctx context.Context, in *ListMyTeamsReq, opts ...grpc.CallOption) (*ListMyTeamsResp, error) {
+	client := syncnoterpc.NewSyncnoterpcClient(m.cli.Conn())
+	return client.ListMyTeams(ctx, in, opts...)
 }

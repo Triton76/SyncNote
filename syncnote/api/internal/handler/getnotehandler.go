@@ -7,8 +7,8 @@ import (
 	"SyncNote/syncnote/api/internal/logic"
 	"SyncNote/syncnote/api/internal/svc"
 	"SyncNote/syncnote/api/internal/types"
-	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/zeromicro/go-zero/rest/httpx"
 )
@@ -24,7 +24,7 @@ func GetNoteHandler(svcCtx *svc.ServiceContext) http.HandlerFunc {
 		l := logic.NewGetNoteLogic(r.Context(), svcCtx)
 		resp, err := l.GetNote(&req)
 		if err != nil {
-			if errors.Is(err, logic.ErrForbiddenNoteAccess) {
+			if strings.Contains(strings.ToLower(err.Error()), "forbidden") {
 				httpx.WriteJsonCtx(r.Context(), w, http.StatusForbidden, map[string]any{
 					"code":    http.StatusForbidden,
 					"message": "forbidden",

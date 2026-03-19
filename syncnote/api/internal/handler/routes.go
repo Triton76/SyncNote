@@ -17,9 +17,29 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 			[]rest.Middleware{serverCtx.Auth},
 			[]rest.Route{
 				{
+					Method:  http.MethodOptions,
+					Path:    "/api/note/:noteId",
+					Handler: OptionsGetNoteHandler(serverCtx),
+				},
+				{
 					Method:  http.MethodGet,
 					Path:    "/api/note/:noteId",
 					Handler: GetNoteHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodOptions,
+					Path:    "/api/note/:noteId/events",
+					Handler: OptionsGetNoteEventsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/api/note/:noteId/events",
+					Handler: GetNoteEventsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodOptions,
+					Path:    "/api/note/create",
+					Handler: OptionsCreateNoteHandler(serverCtx),
 				},
 				{
 					Method:  http.MethodPost,
@@ -27,9 +47,59 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 					Handler: CreateNoteHandler(serverCtx),
 				},
 				{
+					Method:  http.MethodOptions,
+					Path:    "/api/note/save",
+					Handler: OptionsSaveNoteHandler(serverCtx),
+				},
+				{
 					Method:  http.MethodPost,
 					Path:    "/api/note/save",
 					Handler: SaveNoteHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodOptions,
+					Path:    "/api/permission/grant",
+					Handler: OptionsGrantPermissionHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/permission/grant",
+					Handler: GrantPermissionHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodOptions,
+					Path:    "/api/permission/list/:noteId",
+					Handler: OptionsListPermissionsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/api/permission/list/:noteId",
+					Handler: ListPermissionsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodOptions,
+					Path:    "/api/permission/revoke",
+					Handler: OptionsRevokePermissionHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodPost,
+					Path:    "/api/permission/revoke",
+					Handler: RevokePermissionHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodOptions,
+					Path:    "/api/team/me",
+					Handler: OptionsGetMyTeamsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodGet,
+					Path:    "/api/team/me",
+					Handler: GetMyTeamsHandler(serverCtx),
+				},
+				{
+					Method:  http.MethodOptions,
+					Path:    "/api/user/notes",
+					Handler: OptionsGetUserNotesHandler(serverCtx),
 				},
 				{
 					Method:  http.MethodGet,

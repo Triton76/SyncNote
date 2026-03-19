@@ -319,6 +319,7 @@ func (x *CreateNoteReq) GetContent() string {
 type NoteReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	NoteId        string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"` // CHAR(32)
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 当前请求用户ID（用于读权限校验）
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -356,6 +357,13 @@ func (*NoteReq) Descriptor() ([]byte, []int) {
 func (x *NoteReq) GetNoteId() string {
 	if x != nil {
 		return x.NoteId
+	}
+	return ""
+}
+
+func (x *NoteReq) GetUserId() string {
+	if x != nil {
+		return x.UserId
 	}
 	return ""
 }
@@ -871,14 +879,15 @@ func (x *PermissionInfo) GetRevokedAt() int64 {
 
 // 请求：授予/更新权限
 type GrantPermissionReq struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	NoteId        string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
-	OperatorId    string                 `protobuf:"bytes,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`         // 执行操作的人 (必须是 owner/admin)
-	TargetUserId  string                 `protobuf:"bytes,3,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"` // 可选：针对用户
-	TargetTeamId  string                 `protobuf:"bytes,4,opt,name=target_team_id,json=targetTeamId,proto3" json:"target_team_id,omitempty"` // 可选：针对团队
-	Role          Role                   `protobuf:"varint,5,opt,name=role,proto3,enum=syncnoterpc.Role" json:"role,omitempty"`                // 注意：user_id 和 team_id 必须二选一，逻辑在 Service 层校验
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	NoteId          string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
+	OperatorId      string                 `protobuf:"bytes,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`         // 执行操作的人 (必须是 owner/admin)
+	TargetUserId    string                 `protobuf:"bytes,3,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"` // 可选：针对用户
+	TargetTeamId    string                 `protobuf:"bytes,4,opt,name=target_team_id,json=targetTeamId,proto3" json:"target_team_id,omitempty"` // 可选：针对团队
+	Role            Role                   `protobuf:"varint,5,opt,name=role,proto3,enum=syncnoterpc.Role" json:"role,omitempty"`
+	TargetUserEmail string                 `protobuf:"bytes,6,opt,name=target_user_email,json=targetUserEmail,proto3" json:"target_user_email,omitempty"` // 可选：按邮箱定位用户
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *GrantPermissionReq) Reset() {
@@ -944,6 +953,13 @@ func (x *GrantPermissionReq) GetRole() Role {
 		return x.Role
 	}
 	return Role_ROLE_UNSPECIFIED
+}
+
+func (x *GrantPermissionReq) GetTargetUserEmail() string {
+	if x != nil {
+		return x.TargetUserEmail
+	}
+	return ""
 }
 
 // 请求：撤销权限
@@ -1401,6 +1417,170 @@ func (x *GetNoteEventsResp) GetHasMore() bool {
 	return false
 }
 
+type TeamInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TeamId        string                 `protobuf:"bytes,1,opt,name=team_id,json=teamId,proto3" json:"team_id,omitempty"`
+	TeamName      string                 `protobuf:"bytes,2,opt,name=team_name,json=teamName,proto3" json:"team_name,omitempty"`
+	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	JoinedAt      int64                  `protobuf:"varint,5,opt,name=joined_at,json=joinedAt,proto3" json:"joined_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TeamInfo) Reset() {
+	*x = TeamInfo{}
+	mi := &file_syncNoterpc_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TeamInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TeamInfo) ProtoMessage() {}
+
+func (x *TeamInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TeamInfo.ProtoReflect.Descriptor instead.
+func (*TeamInfo) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *TeamInfo) GetTeamId() string {
+	if x != nil {
+		return x.TeamId
+	}
+	return ""
+}
+
+func (x *TeamInfo) GetTeamName() string {
+	if x != nil {
+		return x.TeamName
+	}
+	return ""
+}
+
+func (x *TeamInfo) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
+func (x *TeamInfo) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *TeamInfo) GetJoinedAt() int64 {
+	if x != nil {
+		return x.JoinedAt
+	}
+	return 0
+}
+
+type ListMyTeamsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyTeamsReq) Reset() {
+	*x = ListMyTeamsReq{}
+	mi := &file_syncNoterpc_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyTeamsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyTeamsReq) ProtoMessage() {}
+
+func (x *ListMyTeamsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyTeamsReq.ProtoReflect.Descriptor instead.
+func (*ListMyTeamsReq) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *ListMyTeamsReq) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type ListMyTeamsResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Teams         []*TeamInfo            `protobuf:"bytes,1,rep,name=teams,proto3" json:"teams,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyTeamsResp) Reset() {
+	*x = ListMyTeamsResp{}
+	mi := &file_syncNoterpc_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyTeamsResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyTeamsResp) ProtoMessage() {}
+
+func (x *ListMyTeamsResp) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyTeamsResp.ProtoReflect.Descriptor instead.
+func (*ListMyTeamsResp) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListMyTeamsResp) GetTeams() []*TeamInfo {
+	if x != nil {
+		return x.Teams
+	}
+	return nil
+}
+
 var File_syncNoterpc_proto protoreflect.FileDescriptor
 
 const file_syncNoterpc_proto_rawDesc = "" +
@@ -1409,9 +1589,10 @@ const file_syncNoterpc_proto_rawDesc = "" +
 	"\rCreateNoteReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
-	"\acontent\x18\x03 \x01(\tR\acontent\"\"\n" +
+	"\acontent\x18\x03 \x01(\tR\acontent\";\n" +
 	"\aNoteReq\x12\x17\n" +
-	"\anote_id\x18\x01 \x01(\tR\x06noteId\"\x9a\x01\n" +
+	"\anote_id\x18\x01 \x01(\tR\x06noteId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"\x9a\x01\n" +
 	"\vSaveNoteReq\x12\x17\n" +
 	"\anote_id\x18\x01 \x01(\tR\x06noteId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x18\n" +
@@ -1453,14 +1634,15 @@ const file_syncNoterpc_proto_rawDesc = "" +
 	"\n" +
 	"granted_at\x18\b \x01(\x03R\tgrantedAt\x12\x1d\n" +
 	"\n" +
-	"revoked_at\x18\t \x01(\x03R\trevokedAt\"\xc1\x01\n" +
+	"revoked_at\x18\t \x01(\x03R\trevokedAt\"\xed\x01\n" +
 	"\x12GrantPermissionReq\x12\x17\n" +
 	"\anote_id\x18\x01 \x01(\tR\x06noteId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
 	"operatorId\x12$\n" +
 	"\x0etarget_user_id\x18\x03 \x01(\tR\ftargetUserId\x12$\n" +
 	"\x0etarget_team_id\x18\x04 \x01(\tR\ftargetTeamId\x12%\n" +
-	"\x04role\x18\x05 \x01(\x0e2\x11.syncnoterpc.RoleR\x04role\"\x9b\x01\n" +
+	"\x04role\x18\x05 \x01(\x0e2\x11.syncnoterpc.RoleR\x04role\x12*\n" +
+	"\x11target_user_email\x18\x06 \x01(\tR\x0ftargetUserEmail\"\x9b\x01\n" +
 	"\x13RevokePermissionReq\x12\x17\n" +
 	"\anote_id\x18\x01 \x01(\tR\x06noteId\x12\x1f\n" +
 	"\voperator_id\x18\x02 \x01(\tR\n" +
@@ -1501,7 +1683,17 @@ const file_syncNoterpc_proto_rawDesc = "" +
 	"\x05limit\x18\x03 \x01(\x05R\x05limit\"g\n" +
 	"\x11GetNoteEventsResp\x127\n" +
 	"\x06events\x18\x01 \x03(\v2\x1f.syncnoterpc.CollaborationEventR\x06events\x12\x19\n" +
-	"\bhas_more\x18\x02 \x01(\bR\ahasMore*\xae\x01\n" +
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"\x89\x01\n" +
+	"\bTeamInfo\x12\x17\n" +
+	"\ateam_id\x18\x01 \x01(\tR\x06teamId\x12\x1b\n" +
+	"\tteam_name\x18\x02 \x01(\tR\bteamName\x12\x12\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12\x1b\n" +
+	"\tjoined_at\x18\x05 \x01(\x03R\bjoinedAt\")\n" +
+	"\x0eListMyTeamsReq\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\">\n" +
+	"\x0fListMyTeamsResp\x12+\n" +
+	"\x05teams\x18\x01 \x03(\v2\x15.syncnoterpc.TeamInfoR\x05teams*\xae\x01\n" +
 	"\bSaveCode\x12\x19\n" +
 	"\x15SAVE_CODE_UNSPECIFIED\x10\x00\x12\x10\n" +
 	"\fSAVE_CODE_OK\x10\x01\x12\x1e\n" +
@@ -1531,7 +1723,7 @@ const file_syncNoterpc_proto_rawDesc = "" +
 	"\x1dEVENT_TYPE_PERMISSION_REVOKED\x10\x05\x12 \n" +
 	"\x1cEVENT_TYPE_CONFLICT_DETECTED\x10\x06\x12\x1b\n" +
 	"\x17EVENT_TYPE_VIEW_STARTED\x10\a\x12\x19\n" +
-	"\x15EVENT_TYPE_VIEW_ENDED\x10\b2\xd8\x04\n" +
+	"\x15EVENT_TYPE_VIEW_ENDED\x10\b2\xa2\x05\n" +
 	"\vSyncnoterpc\x12?\n" +
 	"\n" +
 	"CreateNote\x12\x1a.syncnoterpc.CreateNoteReq\x1a\x15.syncnoterpc.NoteResp\x126\n" +
@@ -1541,7 +1733,8 @@ const file_syncNoterpc_proto_rawDesc = "" +
 	"\x0fGrantPermission\x12\x1f.syncnoterpc.GrantPermissionReq\x1a\x1b.syncnoterpc.PermissionResp\x12Q\n" +
 	"\x10RevokePermission\x12 .syncnoterpc.RevokePermissionReq\x1a\x1b.syncnoterpc.PermissionResp\x12T\n" +
 	"\x0fListPermissions\x12\x1f.syncnoterpc.ListPermissionsReq\x1a .syncnoterpc.ListPermissionsResp\x12N\n" +
-	"\rGetNoteEvents\x12\x1d.syncnoterpc.GetNoteEventsReq\x1a\x1e.syncnoterpc.GetNoteEventsRespB\x0fZ\r./syncnoterpcb\x06proto3"
+	"\rGetNoteEvents\x12\x1d.syncnoterpc.GetNoteEventsReq\x1a\x1e.syncnoterpc.GetNoteEventsResp\x12H\n" +
+	"\vListMyTeams\x12\x1b.syncnoterpc.ListMyTeamsReq\x1a\x1c.syncnoterpc.ListMyTeamsRespB\x0fZ\r./syncnoterpcb\x06proto3"
 
 var (
 	file_syncNoterpc_proto_rawDescOnce sync.Once
@@ -1556,7 +1749,7 @@ func file_syncNoterpc_proto_rawDescGZIP() []byte {
 }
 
 var file_syncNoterpc_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_syncNoterpc_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_syncNoterpc_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_syncNoterpc_proto_goTypes = []any{
 	(SaveCode)(0),               // 0: syncnoterpc.SaveCode
 	(Role)(0),                   // 1: syncnoterpc.Role
@@ -1579,6 +1772,9 @@ var file_syncNoterpc_proto_goTypes = []any{
 	(*CollaborationEvent)(nil),  // 18: syncnoterpc.CollaborationEvent
 	(*GetNoteEventsReq)(nil),    // 19: syncnoterpc.GetNoteEventsReq
 	(*GetNoteEventsResp)(nil),   // 20: syncnoterpc.GetNoteEventsResp
+	(*TeamInfo)(nil),            // 21: syncnoterpc.TeamInfo
+	(*ListMyTeamsReq)(nil),      // 22: syncnoterpc.ListMyTeamsReq
+	(*ListMyTeamsResp)(nil),     // 23: syncnoterpc.ListMyTeamsResp
 }
 var file_syncNoterpc_proto_depIdxs = []int32{
 	8,  // 0: syncnoterpc.UserNotesResp.notes:type_name -> syncnoterpc.NoteSummary
@@ -1591,27 +1787,30 @@ var file_syncNoterpc_proto_depIdxs = []int32{
 	12, // 7: syncnoterpc.PermissionResp.permission:type_name -> syncnoterpc.PermissionInfo
 	3,  // 8: syncnoterpc.CollaborationEvent.event_type:type_name -> syncnoterpc.EventType
 	18, // 9: syncnoterpc.GetNoteEventsResp.events:type_name -> syncnoterpc.CollaborationEvent
-	4,  // 10: syncnoterpc.Syncnoterpc.CreateNote:input_type -> syncnoterpc.CreateNoteReq
-	5,  // 11: syncnoterpc.Syncnoterpc.GetNote:input_type -> syncnoterpc.NoteReq
-	6,  // 12: syncnoterpc.Syncnoterpc.SaveNote:input_type -> syncnoterpc.SaveNoteReq
-	9,  // 13: syncnoterpc.Syncnoterpc.GetUserNotes:input_type -> syncnoterpc.UserNotesReq
-	13, // 14: syncnoterpc.Syncnoterpc.GrantPermission:input_type -> syncnoterpc.GrantPermissionReq
-	14, // 15: syncnoterpc.Syncnoterpc.RevokePermission:input_type -> syncnoterpc.RevokePermissionReq
-	15, // 16: syncnoterpc.Syncnoterpc.ListPermissions:input_type -> syncnoterpc.ListPermissionsReq
-	19, // 17: syncnoterpc.Syncnoterpc.GetNoteEvents:input_type -> syncnoterpc.GetNoteEventsReq
-	7,  // 18: syncnoterpc.Syncnoterpc.CreateNote:output_type -> syncnoterpc.NoteResp
-	7,  // 19: syncnoterpc.Syncnoterpc.GetNote:output_type -> syncnoterpc.NoteResp
-	11, // 20: syncnoterpc.Syncnoterpc.SaveNote:output_type -> syncnoterpc.SaveNoteResp
-	10, // 21: syncnoterpc.Syncnoterpc.GetUserNotes:output_type -> syncnoterpc.UserNotesResp
-	17, // 22: syncnoterpc.Syncnoterpc.GrantPermission:output_type -> syncnoterpc.PermissionResp
-	17, // 23: syncnoterpc.Syncnoterpc.RevokePermission:output_type -> syncnoterpc.PermissionResp
-	16, // 24: syncnoterpc.Syncnoterpc.ListPermissions:output_type -> syncnoterpc.ListPermissionsResp
-	20, // 25: syncnoterpc.Syncnoterpc.GetNoteEvents:output_type -> syncnoterpc.GetNoteEventsResp
-	18, // [18:26] is the sub-list for method output_type
-	10, // [10:18] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	21, // 10: syncnoterpc.ListMyTeamsResp.teams:type_name -> syncnoterpc.TeamInfo
+	4,  // 11: syncnoterpc.Syncnoterpc.CreateNote:input_type -> syncnoterpc.CreateNoteReq
+	5,  // 12: syncnoterpc.Syncnoterpc.GetNote:input_type -> syncnoterpc.NoteReq
+	6,  // 13: syncnoterpc.Syncnoterpc.SaveNote:input_type -> syncnoterpc.SaveNoteReq
+	9,  // 14: syncnoterpc.Syncnoterpc.GetUserNotes:input_type -> syncnoterpc.UserNotesReq
+	13, // 15: syncnoterpc.Syncnoterpc.GrantPermission:input_type -> syncnoterpc.GrantPermissionReq
+	14, // 16: syncnoterpc.Syncnoterpc.RevokePermission:input_type -> syncnoterpc.RevokePermissionReq
+	15, // 17: syncnoterpc.Syncnoterpc.ListPermissions:input_type -> syncnoterpc.ListPermissionsReq
+	19, // 18: syncnoterpc.Syncnoterpc.GetNoteEvents:input_type -> syncnoterpc.GetNoteEventsReq
+	22, // 19: syncnoterpc.Syncnoterpc.ListMyTeams:input_type -> syncnoterpc.ListMyTeamsReq
+	7,  // 20: syncnoterpc.Syncnoterpc.CreateNote:output_type -> syncnoterpc.NoteResp
+	7,  // 21: syncnoterpc.Syncnoterpc.GetNote:output_type -> syncnoterpc.NoteResp
+	11, // 22: syncnoterpc.Syncnoterpc.SaveNote:output_type -> syncnoterpc.SaveNoteResp
+	10, // 23: syncnoterpc.Syncnoterpc.GetUserNotes:output_type -> syncnoterpc.UserNotesResp
+	17, // 24: syncnoterpc.Syncnoterpc.GrantPermission:output_type -> syncnoterpc.PermissionResp
+	17, // 25: syncnoterpc.Syncnoterpc.RevokePermission:output_type -> syncnoterpc.PermissionResp
+	16, // 26: syncnoterpc.Syncnoterpc.ListPermissions:output_type -> syncnoterpc.ListPermissionsResp
+	20, // 27: syncnoterpc.Syncnoterpc.GetNoteEvents:output_type -> syncnoterpc.GetNoteEventsResp
+	23, // 28: syncnoterpc.Syncnoterpc.ListMyTeams:output_type -> syncnoterpc.ListMyTeamsResp
+	20, // [20:29] is the sub-list for method output_type
+	11, // [11:20] is the sub-list for method input_type
+	11, // [11:11] is the sub-list for extension type_name
+	11, // [11:11] is the sub-list for extension extendee
+	0,  // [0:11] is the sub-list for field type_name
 }
 
 func init() { file_syncNoterpc_proto_init() }
@@ -1625,7 +1824,7 @@ func file_syncNoterpc_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_syncNoterpc_proto_rawDesc), len(file_syncNoterpc_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   17,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
