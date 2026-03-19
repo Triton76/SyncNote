@@ -23,6 +23,7 @@ func NewSyncnoterpcServer(svcCtx *svc.ServiceContext) *SyncnoterpcServer {
 	}
 }
 
+// --- Core Note Operations ---
 func (s *SyncnoterpcServer) CreateNote(ctx context.Context, in *syncnoterpc.CreateNoteReq) (*syncnoterpc.NoteResp, error) {
 	l := logic.NewCreateNoteLogic(ctx, s.svcCtx)
 	return l.CreateNote(in)
@@ -41,4 +42,28 @@ func (s *SyncnoterpcServer) SaveNote(ctx context.Context, in *syncnoterpc.SaveNo
 func (s *SyncnoterpcServer) GetUserNotes(ctx context.Context, in *syncnoterpc.UserNotesReq) (*syncnoterpc.UserNotesResp, error) {
 	l := logic.NewGetUserNotesLogic(ctx, s.svcCtx)
 	return l.GetUserNotes(in)
+}
+
+// --- Permission Management (对应 note_permissions 表) ---
+func (s *SyncnoterpcServer) GrantPermission(ctx context.Context, in *syncnoterpc.GrantPermissionReq) (*syncnoterpc.PermissionResp, error) {
+	l := logic.NewGrantPermissionLogic(ctx, s.svcCtx)
+	return l.GrantPermission(in)
+}
+
+// 撤销权限
+func (s *SyncnoterpcServer) RevokePermission(ctx context.Context, in *syncnoterpc.RevokePermissionReq) (*syncnoterpc.PermissionResp, error) {
+	l := logic.NewRevokePermissionLogic(ctx, s.svcCtx)
+	return l.RevokePermission(in)
+}
+
+// 获取笔记的所有权限列表
+func (s *SyncnoterpcServer) ListPermissions(ctx context.Context, in *syncnoterpc.ListPermissionsReq) (*syncnoterpc.ListPermissionsResp, error) {
+	l := logic.NewListPermissionsLogic(ctx, s.svcCtx)
+	return l.ListPermissions(in)
+}
+
+// --- Collaboration History (对应 collaboration_events 表) ---
+func (s *SyncnoterpcServer) GetNoteEvents(ctx context.Context, in *syncnoterpc.GetNoteEventsReq) (*syncnoterpc.GetNoteEventsResp, error) {
+	l := logic.NewGetNoteEventsLogic(ctx, s.svcCtx)
+	return l.GetNoteEvents(in)
 }

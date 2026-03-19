@@ -62,3 +62,4 @@ service syncNote-api {
 	@handler GetUserNotesHandler
 	get /api/user/notes (UserNotesReq) returns (UserNotesResp)
 }
+

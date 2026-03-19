@@ -14,20 +14,38 @@ import (
 )
 
 type (
-	CreateNoteReq = syncnoterpc.CreateNoteReq
-	NoteReq       = syncnoterpc.NoteReq
-	NoteResp      = syncnoterpc.NoteResp
-	NoteSummary   = syncnoterpc.NoteSummary
-	SaveNoteReq   = syncnoterpc.SaveNoteReq
-	SaveNoteResp  = syncnoterpc.SaveNoteResp
-	UserNotesReq  = syncnoterpc.UserNotesReq
-	UserNotesResp = syncnoterpc.UserNotesResp
+	CollaborationEvent  = syncnoterpc.CollaborationEvent
+	CreateNoteReq       = syncnoterpc.CreateNoteReq
+	GetNoteEventsReq    = syncnoterpc.GetNoteEventsReq
+	GetNoteEventsResp   = syncnoterpc.GetNoteEventsResp
+	GrantPermissionReq  = syncnoterpc.GrantPermissionReq
+	ListPermissionsReq  = syncnoterpc.ListPermissionsReq
+	ListPermissionsResp = syncnoterpc.ListPermissionsResp
+	NoteReq             = syncnoterpc.NoteReq
+	NoteResp            = syncnoterpc.NoteResp
+	NoteSummary         = syncnoterpc.NoteSummary
+	PermissionInfo      = syncnoterpc.PermissionInfo
+	PermissionResp      = syncnoterpc.PermissionResp
+	RevokePermissionReq = syncnoterpc.RevokePermissionReq
+	SaveNoteReq         = syncnoterpc.SaveNoteReq
+	SaveNoteResp        = syncnoterpc.SaveNoteResp
+	UserNotesReq        = syncnoterpc.UserNotesReq
+	UserNotesResp       = syncnoterpc.UserNotesResp
 
 	Syncnoterpc interface {
+		// --- Core Note Operations ---
 		CreateNote(ctx context.Context, in *CreateNoteReq, opts ...grpc.CallOption) (*NoteResp, error)
 		GetNote(ctx context.Context, in *NoteReq, opts ...grpc.CallOption) (*NoteResp, error)
 		SaveNote(ctx context.Context, in *SaveNoteReq, opts ...grpc.CallOption) (*SaveNoteResp, error)
 		GetUserNotes(ctx context.Context, in *UserNotesReq, opts ...grpc.CallOption) (*UserNotesResp, error)
+		// --- Permission Management (对应 note_permissions 表) ---
+		GrantPermission(ctx context.Context, in *GrantPermissionReq, opts ...grpc.CallOption) (*PermissionResp, error)
+		// 撤销权限
+		RevokePermission(ctx context.Context, in *RevokePermissionReq, opts ...grpc.CallOption) (*PermissionResp, error)
+		// 获取笔记的所有权限列表
+		ListPermissions(ctx context.Context, in *ListPermissionsReq, opts ...grpc.CallOption) (*ListPermissionsResp, error)
+		// --- Collaboration History (对应 collaboration_events 表) ---
+		GetNoteEvents(ctx context.Context, in *GetNoteEventsReq, opts ...grpc.CallOption) (*GetNoteEventsResp, error)
 	}
 
 	defaultSyncnoterpc struct {
@@ -41,6 +59,7 @@ func NewSyncnoterpc(cli zrpc.Client) Syncnoterpc {
 	}
 }
 
+// --- Core Note Operations ---
 func (m *defaultSyncnoterpc) CreateNote(ctx context.Context, in *CreateNoteReq, opts ...grpc.CallOption) (*NoteResp, error) {
 	client := syncnoterpc.NewSyncnoterpcClient(m.cli.Conn())
 	return client.CreateNote(ctx, in, opts...)
@@ -59,4 +78,28 @@ func (m *defaultSyncnoterpc) SaveNote(ctx context.Context, in *SaveNoteReq, opts
 func (m *defaultSyncnoterpc) GetUserNotes(ctx context.Context, in *UserNotesReq, opts ...grpc.CallOption) (*UserNotesResp, error) {
 	client := syncnoterpc.NewSyncnoterpcClient(m.cli.Conn())
 	return client.GetUserNotes(ctx, in, opts...)
+}
+
+// --- Permission Management (对应 note_permissions 表) ---
+func (m *defaultSyncnoterpc) GrantPermission(ctx context.Context, in *GrantPermissionReq, opts ...grpc.CallOption) (*PermissionResp, error) {
+	client := syncnoterpc.NewSyncnoterpcClient(m.cli.Conn())
+	return client.GrantPermission(ctx, in, opts...)
+}
+
+// 撤销权限
+func (m *defaultSyncnoterpc) RevokePermission(ctx context.Context, in *RevokePermissionReq, opts ...grpc.CallOption) (*PermissionResp, error) {
+	client := syncnoterpc.NewSyncnoterpcClient(m.cli.Conn())
+	return client.RevokePermission(ctx, in, opts...)
+}
+
+// 获取笔记的所有权限列表
+func (m *defaultSyncnoterpc) ListPermissions(ctx context.Context, in *ListPermissionsReq, opts ...grpc.CallOption) (*ListPermissionsResp, error) {
+	client := syncnoterpc.NewSyncnoterpcClient(m.cli.Conn())
+	return client.ListPermissions(ctx, in, opts...)
+}
+
+// --- Collaboration History (对应 collaboration_events 表) ---
+func (m *defaultSyncnoterpc) GetNoteEvents(ctx context.Context, in *GetNoteEventsReq, opts ...grpc.CallOption) (*GetNoteEventsResp, error) {
+	client := syncnoterpc.NewSyncnoterpcClient(m.cli.Conn())
+	return client.GetNoteEvents(ctx, in, opts...)
 }

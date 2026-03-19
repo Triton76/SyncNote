@@ -24,11 +24,12 @@ const (
 type SaveCode int32
 
 const (
-	SaveCode_SAVE_CODE_UNSPECIFIED      SaveCode = 0
-	SaveCode_SAVE_CODE_OK               SaveCode = 1
-	SaveCode_SAVE_CODE_VERSION_CONFLICT SaveCode = 2
-	SaveCode_SAVE_CODE_NOT_FOUND        SaveCode = 3
-	SaveCode_SAVE_CODE_INVALID_PARAM    SaveCode = 4
+	SaveCode_SAVE_CODE_UNSPECIFIED       SaveCode = 0
+	SaveCode_SAVE_CODE_OK                SaveCode = 1
+	SaveCode_SAVE_CODE_VERSION_CONFLICT  SaveCode = 2 // 对应 expected_version 不匹配
+	SaveCode_SAVE_CODE_NOT_FOUND         SaveCode = 3
+	SaveCode_SAVE_CODE_INVALID_PARAM     SaveCode = 4
+	SaveCode_SAVE_CODE_PERMISSION_DENIED SaveCode = 5 // 新增：权限不足
 )
 
 // Enum value maps for SaveCode.
@@ -39,13 +40,15 @@ var (
 		2: "SAVE_CODE_VERSION_CONFLICT",
 		3: "SAVE_CODE_NOT_FOUND",
 		4: "SAVE_CODE_INVALID_PARAM",
+		5: "SAVE_CODE_PERMISSION_DENIED",
 	}
 	SaveCode_value = map[string]int32{
-		"SAVE_CODE_UNSPECIFIED":      0,
-		"SAVE_CODE_OK":               1,
-		"SAVE_CODE_VERSION_CONFLICT": 2,
-		"SAVE_CODE_NOT_FOUND":        3,
-		"SAVE_CODE_INVALID_PARAM":    4,
+		"SAVE_CODE_UNSPECIFIED":       0,
+		"SAVE_CODE_OK":                1,
+		"SAVE_CODE_VERSION_CONFLICT":  2,
+		"SAVE_CODE_NOT_FOUND":         3,
+		"SAVE_CODE_INVALID_PARAM":     4,
+		"SAVE_CODE_PERMISSION_DENIED": 5,
 	}
 )
 
@@ -76,9 +79,186 @@ func (SaveCode) EnumDescriptor() ([]byte, []int) {
 	return file_syncNoterpc_proto_rawDescGZIP(), []int{0}
 }
 
+// 权限角色 (对应 DB: role IN ('owner', 'admin', 'editor', 'viewer'))
+type Role int32
+
+const (
+	Role_ROLE_UNSPECIFIED Role = 0
+	Role_ROLE_OWNER       Role = 1
+	Role_ROLE_ADMIN       Role = 2
+	Role_ROLE_EDITOR      Role = 3
+	Role_ROLE_VIEWER      Role = 4
+)
+
+// Enum value maps for Role.
+var (
+	Role_name = map[int32]string{
+		0: "ROLE_UNSPECIFIED",
+		1: "ROLE_OWNER",
+		2: "ROLE_ADMIN",
+		3: "ROLE_EDITOR",
+		4: "ROLE_VIEWER",
+	}
+	Role_value = map[string]int32{
+		"ROLE_UNSPECIFIED": 0,
+		"ROLE_OWNER":       1,
+		"ROLE_ADMIN":       2,
+		"ROLE_EDITOR":      3,
+		"ROLE_VIEWER":      4,
+	}
+)
+
+func (x Role) Enum() *Role {
+	p := new(Role)
+	*p = x
+	return p
+}
+
+func (x Role) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Role) Descriptor() protoreflect.EnumDescriptor {
+	return file_syncNoterpc_proto_enumTypes[1].Descriptor()
+}
+
+func (Role) Type() protoreflect.EnumType {
+	return &file_syncNoterpc_proto_enumTypes[1]
+}
+
+func (x Role) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Role.Descriptor instead.
+func (Role) EnumDescriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{1}
+}
+
+// 权限状态 (对应 DB: status IN ('active', 'revoked', 'pending'))
+type PermissionStatus int32
+
+const (
+	PermissionStatus_PERMISSION_STATUS_UNSPECIFIED PermissionStatus = 0
+	PermissionStatus_PERMISSION_STATUS_ACTIVE      PermissionStatus = 1
+	PermissionStatus_PERMISSION_STATUS_REVOKED     PermissionStatus = 2
+	PermissionStatus_PERMISSION_STATUS_PENDING     PermissionStatus = 3
+)
+
+// Enum value maps for PermissionStatus.
+var (
+	PermissionStatus_name = map[int32]string{
+		0: "PERMISSION_STATUS_UNSPECIFIED",
+		1: "PERMISSION_STATUS_ACTIVE",
+		2: "PERMISSION_STATUS_REVOKED",
+		3: "PERMISSION_STATUS_PENDING",
+	}
+	PermissionStatus_value = map[string]int32{
+		"PERMISSION_STATUS_UNSPECIFIED": 0,
+		"PERMISSION_STATUS_ACTIVE":      1,
+		"PERMISSION_STATUS_REVOKED":     2,
+		"PERMISSION_STATUS_PENDING":     3,
+	}
+)
+
+func (x PermissionStatus) Enum() *PermissionStatus {
+	p := new(PermissionStatus)
+	*p = x
+	return p
+}
+
+func (x PermissionStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (PermissionStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_syncNoterpc_proto_enumTypes[2].Descriptor()
+}
+
+func (PermissionStatus) Type() protoreflect.EnumType {
+	return &file_syncNoterpc_proto_enumTypes[2]
+}
+
+func (x PermissionStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use PermissionStatus.Descriptor instead.
+func (PermissionStatus) EnumDescriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{2}
+}
+
+// 协作事件类型 (对应 DB: event_type CHECK (...))
+type EventType int32
+
+const (
+	EventType_EVENT_TYPE_UNSPECIFIED        EventType = 0
+	EventType_EVENT_TYPE_NOTE_CREATED       EventType = 1
+	EventType_EVENT_TYPE_NOTE_UPDATED       EventType = 2
+	EventType_EVENT_TYPE_NOTE_DELETED       EventType = 3
+	EventType_EVENT_TYPE_PERMISSION_GRANTED EventType = 4
+	EventType_EVENT_TYPE_PERMISSION_REVOKED EventType = 5
+	EventType_EVENT_TYPE_CONFLICT_DETECTED  EventType = 6
+	EventType_EVENT_TYPE_VIEW_STARTED       EventType = 7
+	EventType_EVENT_TYPE_VIEW_ENDED         EventType = 8
+)
+
+// Enum value maps for EventType.
+var (
+	EventType_name = map[int32]string{
+		0: "EVENT_TYPE_UNSPECIFIED",
+		1: "EVENT_TYPE_NOTE_CREATED",
+		2: "EVENT_TYPE_NOTE_UPDATED",
+		3: "EVENT_TYPE_NOTE_DELETED",
+		4: "EVENT_TYPE_PERMISSION_GRANTED",
+		5: "EVENT_TYPE_PERMISSION_REVOKED",
+		6: "EVENT_TYPE_CONFLICT_DETECTED",
+		7: "EVENT_TYPE_VIEW_STARTED",
+		8: "EVENT_TYPE_VIEW_ENDED",
+	}
+	EventType_value = map[string]int32{
+		"EVENT_TYPE_UNSPECIFIED":        0,
+		"EVENT_TYPE_NOTE_CREATED":       1,
+		"EVENT_TYPE_NOTE_UPDATED":       2,
+		"EVENT_TYPE_NOTE_DELETED":       3,
+		"EVENT_TYPE_PERMISSION_GRANTED": 4,
+		"EVENT_TYPE_PERMISSION_REVOKED": 5,
+		"EVENT_TYPE_CONFLICT_DETECTED":  6,
+		"EVENT_TYPE_VIEW_STARTED":       7,
+		"EVENT_TYPE_VIEW_ENDED":         8,
+	}
+)
+
+func (x EventType) Enum() *EventType {
+	p := new(EventType)
+	*p = x
+	return p
+}
+
+func (x EventType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (EventType) Descriptor() protoreflect.EnumDescriptor {
+	return file_syncNoterpc_proto_enumTypes[3].Descriptor()
+}
+
+func (EventType) Type() protoreflect.EnumType {
+	return &file_syncNoterpc_proto_enumTypes[3]
+}
+
+func (x EventType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use EventType.Descriptor instead.
+func (EventType) EnumDescriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{3}
+}
+
 type CreateNoteReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // CHAR(32)
 	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	Content       string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -138,7 +318,7 @@ func (x *CreateNoteReq) GetContent() string {
 
 type NoteReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	NoteId        string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
+	NoteId        string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"` // CHAR(32)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -186,7 +366,7 @@ type SaveNoteReq struct {
 	UserId          string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
 	Content         string                 `protobuf:"bytes,3,opt,name=content,proto3" json:"content,omitempty"`
 	ExpectedVersion int64                  `protobuf:"varint,4,opt,name=expected_version,json=expectedVersion,proto3" json:"expected_version,omitempty"`
-	Title           string                 `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"`
+	Title           string                 `protobuf:"bytes,5,opt,name=title,proto3" json:"title,omitempty"` // 不需要传 permission_id，RPC 层会根据 user_id + note_id 去查 note_permissions 表校验
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
@@ -259,7 +439,7 @@ func (x *SaveNoteReq) GetTitle() string {
 type NoteResp struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	NoteId        string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
-	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // Owner ID
 	Title         string                 `protobuf:"bytes,3,opt,name=title,proto3" json:"title,omitempty"`
 	Content       string                 `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
 	Version       int64                  `protobuf:"varint,5,opt,name=version,proto3" json:"version,omitempty"`
@@ -346,6 +526,7 @@ type NoteSummary struct {
 	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	Version       int64                  `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`
 	LastModified  int64                  `protobuf:"varint,4,opt,name=last_modified,json=lastModified,proto3" json:"last_modified,omitempty"`
+	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"` // 当前用户对该笔记的角色
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -408,9 +589,16 @@ func (x *NoteSummary) GetLastModified() int64 {
 	return 0
 }
 
+func (x *NoteSummary) GetRole() string {
+	if x != nil {
+		return x.Role
+	}
+	return ""
+}
+
 type UserNotesReq struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 可选：增加分页或过滤条件
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -572,6 +760,647 @@ func (x *SaveNoteResp) GetLatestVersion() int64 {
 	return 0
 }
 
+// 对应 note_permissions 表的一条记录
+type PermissionInfo struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PermissionId  string                 `protobuf:"bytes,1,opt,name=permission_id,json=permissionId,proto3" json:"permission_id,omitempty"`
+	NoteId        string                 `protobuf:"bytes,2,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // 被授权用户
+	TeamId        string                 `protobuf:"bytes,4,opt,name=team_id,json=teamId,proto3" json:"team_id,omitempty"` // 被授权团队
+	GrantedBy     string                 `protobuf:"bytes,5,opt,name=granted_by,json=grantedBy,proto3" json:"granted_by,omitempty"`
+	Role          Role                   `protobuf:"varint,6,opt,name=role,proto3,enum=syncnoterpc.Role" json:"role,omitempty"`
+	Status        PermissionStatus       `protobuf:"varint,7,opt,name=status,proto3,enum=syncnoterpc.PermissionStatus" json:"status,omitempty"`
+	GrantedAt     int64                  `protobuf:"varint,8,opt,name=granted_at,json=grantedAt,proto3" json:"granted_at,omitempty"`
+	RevokedAt     int64                  `protobuf:"varint,9,opt,name=revoked_at,json=revokedAt,proto3" json:"revoked_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PermissionInfo) Reset() {
+	*x = PermissionInfo{}
+	mi := &file_syncNoterpc_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PermissionInfo) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PermissionInfo) ProtoMessage() {}
+
+func (x *PermissionInfo) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PermissionInfo.ProtoReflect.Descriptor instead.
+func (*PermissionInfo) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *PermissionInfo) GetPermissionId() string {
+	if x != nil {
+		return x.PermissionId
+	}
+	return ""
+}
+
+func (x *PermissionInfo) GetNoteId() string {
+	if x != nil {
+		return x.NoteId
+	}
+	return ""
+}
+
+func (x *PermissionInfo) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *PermissionInfo) GetTeamId() string {
+	if x != nil {
+		return x.TeamId
+	}
+	return ""
+}
+
+func (x *PermissionInfo) GetGrantedBy() string {
+	if x != nil {
+		return x.GrantedBy
+	}
+	return ""
+}
+
+func (x *PermissionInfo) GetRole() Role {
+	if x != nil {
+		return x.Role
+	}
+	return Role_ROLE_UNSPECIFIED
+}
+
+func (x *PermissionInfo) GetStatus() PermissionStatus {
+	if x != nil {
+		return x.Status
+	}
+	return PermissionStatus_PERMISSION_STATUS_UNSPECIFIED
+}
+
+func (x *PermissionInfo) GetGrantedAt() int64 {
+	if x != nil {
+		return x.GrantedAt
+	}
+	return 0
+}
+
+func (x *PermissionInfo) GetRevokedAt() int64 {
+	if x != nil {
+		return x.RevokedAt
+	}
+	return 0
+}
+
+// 请求：授予/更新权限
+type GrantPermissionReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NoteId        string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
+	OperatorId    string                 `protobuf:"bytes,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`         // 执行操作的人 (必须是 owner/admin)
+	TargetUserId  string                 `protobuf:"bytes,3,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"` // 可选：针对用户
+	TargetTeamId  string                 `protobuf:"bytes,4,opt,name=target_team_id,json=targetTeamId,proto3" json:"target_team_id,omitempty"` // 可选：针对团队
+	Role          Role                   `protobuf:"varint,5,opt,name=role,proto3,enum=syncnoterpc.Role" json:"role,omitempty"`                // 注意：user_id 和 team_id 必须二选一，逻辑在 Service 层校验
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GrantPermissionReq) Reset() {
+	*x = GrantPermissionReq{}
+	mi := &file_syncNoterpc_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GrantPermissionReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GrantPermissionReq) ProtoMessage() {}
+
+func (x *GrantPermissionReq) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GrantPermissionReq.ProtoReflect.Descriptor instead.
+func (*GrantPermissionReq) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GrantPermissionReq) GetNoteId() string {
+	if x != nil {
+		return x.NoteId
+	}
+	return ""
+}
+
+func (x *GrantPermissionReq) GetOperatorId() string {
+	if x != nil {
+		return x.OperatorId
+	}
+	return ""
+}
+
+func (x *GrantPermissionReq) GetTargetUserId() string {
+	if x != nil {
+		return x.TargetUserId
+	}
+	return ""
+}
+
+func (x *GrantPermissionReq) GetTargetTeamId() string {
+	if x != nil {
+		return x.TargetTeamId
+	}
+	return ""
+}
+
+func (x *GrantPermissionReq) GetRole() Role {
+	if x != nil {
+		return x.Role
+	}
+	return Role_ROLE_UNSPECIFIED
+}
+
+// 请求：撤销权限
+type RevokePermissionReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NoteId        string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
+	OperatorId    string                 `protobuf:"bytes,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	TargetUserId  string                 `protobuf:"bytes,3,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"` // 可选
+	TargetTeamId  string                 `protobuf:"bytes,4,opt,name=target_team_id,json=targetTeamId,proto3" json:"target_team_id,omitempty"` // 可选
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RevokePermissionReq) Reset() {
+	*x = RevokePermissionReq{}
+	mi := &file_syncNoterpc_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevokePermissionReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevokePermissionReq) ProtoMessage() {}
+
+func (x *RevokePermissionReq) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevokePermissionReq.ProtoReflect.Descriptor instead.
+func (*RevokePermissionReq) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *RevokePermissionReq) GetNoteId() string {
+	if x != nil {
+		return x.NoteId
+	}
+	return ""
+}
+
+func (x *RevokePermissionReq) GetOperatorId() string {
+	if x != nil {
+		return x.OperatorId
+	}
+	return ""
+}
+
+func (x *RevokePermissionReq) GetTargetUserId() string {
+	if x != nil {
+		return x.TargetUserId
+	}
+	return ""
+}
+
+func (x *RevokePermissionReq) GetTargetTeamId() string {
+	if x != nil {
+		return x.TargetTeamId
+	}
+	return ""
+}
+
+// 请求：查询笔记的权限列表
+type ListPermissionsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NoteId        string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
+	OperatorId    string                 `protobuf:"bytes,2,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"` // 用于校验是否有权限查看列表
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPermissionsReq) Reset() {
+	*x = ListPermissionsReq{}
+	mi := &file_syncNoterpc_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPermissionsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPermissionsReq) ProtoMessage() {}
+
+func (x *ListPermissionsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPermissionsReq.ProtoReflect.Descriptor instead.
+func (*ListPermissionsReq) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ListPermissionsReq) GetNoteId() string {
+	if x != nil {
+		return x.NoteId
+	}
+	return ""
+}
+
+func (x *ListPermissionsReq) GetOperatorId() string {
+	if x != nil {
+		return x.OperatorId
+	}
+	return ""
+}
+
+type ListPermissionsResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Permissions   []*PermissionInfo      `protobuf:"bytes,1,rep,name=permissions,proto3" json:"permissions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPermissionsResp) Reset() {
+	*x = ListPermissionsResp{}
+	mi := &file_syncNoterpc_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPermissionsResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPermissionsResp) ProtoMessage() {}
+
+func (x *ListPermissionsResp) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPermissionsResp.ProtoReflect.Descriptor instead.
+func (*ListPermissionsResp) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *ListPermissionsResp) GetPermissions() []*PermissionInfo {
+	if x != nil {
+		return x.Permissions
+	}
+	return nil
+}
+
+type PermissionResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Permission    *PermissionInfo        `protobuf:"bytes,3,opt,name=permission,proto3" json:"permission,omitempty"` // 如果是 Grant，返回新权限信息
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PermissionResp) Reset() {
+	*x = PermissionResp{}
+	mi := &file_syncNoterpc_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PermissionResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PermissionResp) ProtoMessage() {}
+
+func (x *PermissionResp) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PermissionResp.ProtoReflect.Descriptor instead.
+func (*PermissionResp) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *PermissionResp) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *PermissionResp) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *PermissionResp) GetPermission() *PermissionInfo {
+	if x != nil {
+		return x.Permission
+	}
+	return nil
+}
+
+// 对应 collaboration_events 表的一条记录
+type CollaborationEvent struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	EventId       string                 `protobuf:"bytes,1,opt,name=event_id,json=eventId,proto3" json:"event_id,omitempty"`
+	NoteId        string                 `protobuf:"bytes,2,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
+	EventSeq      int64                  `protobuf:"varint,3,opt,name=event_seq,json=eventSeq,proto3" json:"event_seq,omitempty"`
+	EventType     EventType              `protobuf:"varint,4,opt,name=event_type,json=eventType,proto3,enum=syncnoterpc.EventType" json:"event_type,omitempty"`
+	OperatorId    string                 `protobuf:"bytes,5,opt,name=operator_id,json=operatorId,proto3" json:"operator_id,omitempty"`
+	OperatorName  string                 `protobuf:"bytes,6,opt,name=operator_name,json=operatorName,proto3" json:"operator_name,omitempty"`
+	Payload       string                 `protobuf:"bytes,7,opt,name=payload,proto3" json:"payload,omitempty"` // JSON 字符串，对应 DB 的 JSON 类型
+	NoteVersion   int64                  `protobuf:"varint,8,opt,name=note_version,json=noteVersion,proto3" json:"note_version,omitempty"`
+	IsConflict    bool                   `protobuf:"varint,9,opt,name=is_conflict,json=isConflict,proto3" json:"is_conflict,omitempty"`
+	CreatedAt     int64                  `protobuf:"varint,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CollaborationEvent) Reset() {
+	*x = CollaborationEvent{}
+	mi := &file_syncNoterpc_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CollaborationEvent) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CollaborationEvent) ProtoMessage() {}
+
+func (x *CollaborationEvent) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CollaborationEvent.ProtoReflect.Descriptor instead.
+func (*CollaborationEvent) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *CollaborationEvent) GetEventId() string {
+	if x != nil {
+		return x.EventId
+	}
+	return ""
+}
+
+func (x *CollaborationEvent) GetNoteId() string {
+	if x != nil {
+		return x.NoteId
+	}
+	return ""
+}
+
+func (x *CollaborationEvent) GetEventSeq() int64 {
+	if x != nil {
+		return x.EventSeq
+	}
+	return 0
+}
+
+func (x *CollaborationEvent) GetEventType() EventType {
+	if x != nil {
+		return x.EventType
+	}
+	return EventType_EVENT_TYPE_UNSPECIFIED
+}
+
+func (x *CollaborationEvent) GetOperatorId() string {
+	if x != nil {
+		return x.OperatorId
+	}
+	return ""
+}
+
+func (x *CollaborationEvent) GetOperatorName() string {
+	if x != nil {
+		return x.OperatorName
+	}
+	return ""
+}
+
+func (x *CollaborationEvent) GetPayload() string {
+	if x != nil {
+		return x.Payload
+	}
+	return ""
+}
+
+func (x *CollaborationEvent) GetNoteVersion() int64 {
+	if x != nil {
+		return x.NoteVersion
+	}
+	return 0
+}
+
+func (x *CollaborationEvent) GetIsConflict() bool {
+	if x != nil {
+		return x.IsConflict
+	}
+	return false
+}
+
+func (x *CollaborationEvent) GetCreatedAt() int64 {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return 0
+}
+
+type GetNoteEventsReq struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	NoteId        string                 `protobuf:"bytes,1,opt,name=note_id,json=noteId,proto3" json:"note_id,omitempty"`
+	StartSeq      int64                  `protobuf:"varint,2,opt,name=start_seq,json=startSeq,proto3" json:"start_seq,omitempty"` // 从哪个序列号开始查
+	Limit         int32                  `protobuf:"varint,3,opt,name=limit,proto3" json:"limit,omitempty"`                       // 限制返回数量
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNoteEventsReq) Reset() {
+	*x = GetNoteEventsReq{}
+	mi := &file_syncNoterpc_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNoteEventsReq) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNoteEventsReq) ProtoMessage() {}
+
+func (x *GetNoteEventsReq) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNoteEventsReq.ProtoReflect.Descriptor instead.
+func (*GetNoteEventsReq) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *GetNoteEventsReq) GetNoteId() string {
+	if x != nil {
+		return x.NoteId
+	}
+	return ""
+}
+
+func (x *GetNoteEventsReq) GetStartSeq() int64 {
+	if x != nil {
+		return x.StartSeq
+	}
+	return 0
+}
+
+func (x *GetNoteEventsReq) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type GetNoteEventsResp struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Events        []*CollaborationEvent  `protobuf:"bytes,1,rep,name=events,proto3" json:"events,omitempty"`
+	HasMore       bool                   `protobuf:"varint,2,opt,name=has_more,json=hasMore,proto3" json:"has_more,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetNoteEventsResp) Reset() {
+	*x = GetNoteEventsResp{}
+	mi := &file_syncNoterpc_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetNoteEventsResp) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetNoteEventsResp) ProtoMessage() {}
+
+func (x *GetNoteEventsResp) ProtoReflect() protoreflect.Message {
+	mi := &file_syncNoterpc_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetNoteEventsResp.ProtoReflect.Descriptor instead.
+func (*GetNoteEventsResp) Descriptor() ([]byte, []int) {
+	return file_syncNoterpc_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *GetNoteEventsResp) GetEvents() []*CollaborationEvent {
+	if x != nil {
+		return x.Events
+	}
+	return nil
+}
+
+func (x *GetNoteEventsResp) GetHasMore() bool {
+	if x != nil {
+		return x.HasMore
+	}
+	return false
+}
+
 var File_syncNoterpc_proto protoreflect.FileDescriptor
 
 const file_syncNoterpc_proto_rawDesc = "" +
@@ -595,12 +1424,13 @@ const file_syncNoterpc_proto_rawDesc = "" +
 	"\x05title\x18\x03 \x01(\tR\x05title\x12\x18\n" +
 	"\acontent\x18\x04 \x01(\tR\acontent\x12\x18\n" +
 	"\aversion\x18\x05 \x01(\x03R\aversion\x12#\n" +
-	"\rlast_modified\x18\x06 \x01(\x03R\flastModified\"{\n" +
+	"\rlast_modified\x18\x06 \x01(\x03R\flastModified\"\x8f\x01\n" +
 	"\vNoteSummary\x12\x17\n" +
 	"\anote_id\x18\x01 \x01(\tR\x06noteId\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12\x18\n" +
 	"\aversion\x18\x03 \x01(\x03R\aversion\x12#\n" +
-	"\rlast_modified\x18\x04 \x01(\x03R\flastModified\"'\n" +
+	"\rlast_modified\x18\x04 \x01(\x03R\flastModified\x12\x12\n" +
+	"\x04role\x18\x05 \x01(\tR\x04role\"'\n" +
 	"\fUserNotesReq\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"?\n" +
 	"\rUserNotesResp\x12.\n" +
@@ -610,19 +1440,108 @@ const file_syncNoterpc_proto_rawDesc = "" +
 	"\x04code\x18\x02 \x01(\x0e2\x15.syncnoterpc.SaveCodeR\x04code\x12\x18\n" +
 	"\amessage\x18\x03 \x01(\tR\amessage\x12)\n" +
 	"\x04note\x18\x04 \x01(\v2\x15.syncnoterpc.NoteRespR\x04note\x12%\n" +
-	"\x0elatest_version\x18\x05 \x01(\x03R\rlatestVersion*\x8d\x01\n" +
+	"\x0elatest_version\x18\x05 \x01(\x03R\rlatestVersion\"\xbb\x02\n" +
+	"\x0ePermissionInfo\x12#\n" +
+	"\rpermission_id\x18\x01 \x01(\tR\fpermissionId\x12\x17\n" +
+	"\anote_id\x18\x02 \x01(\tR\x06noteId\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\x12\x17\n" +
+	"\ateam_id\x18\x04 \x01(\tR\x06teamId\x12\x1d\n" +
+	"\n" +
+	"granted_by\x18\x05 \x01(\tR\tgrantedBy\x12%\n" +
+	"\x04role\x18\x06 \x01(\x0e2\x11.syncnoterpc.RoleR\x04role\x125\n" +
+	"\x06status\x18\a \x01(\x0e2\x1d.syncnoterpc.PermissionStatusR\x06status\x12\x1d\n" +
+	"\n" +
+	"granted_at\x18\b \x01(\x03R\tgrantedAt\x12\x1d\n" +
+	"\n" +
+	"revoked_at\x18\t \x01(\x03R\trevokedAt\"\xc1\x01\n" +
+	"\x12GrantPermissionReq\x12\x17\n" +
+	"\anote_id\x18\x01 \x01(\tR\x06noteId\x12\x1f\n" +
+	"\voperator_id\x18\x02 \x01(\tR\n" +
+	"operatorId\x12$\n" +
+	"\x0etarget_user_id\x18\x03 \x01(\tR\ftargetUserId\x12$\n" +
+	"\x0etarget_team_id\x18\x04 \x01(\tR\ftargetTeamId\x12%\n" +
+	"\x04role\x18\x05 \x01(\x0e2\x11.syncnoterpc.RoleR\x04role\"\x9b\x01\n" +
+	"\x13RevokePermissionReq\x12\x17\n" +
+	"\anote_id\x18\x01 \x01(\tR\x06noteId\x12\x1f\n" +
+	"\voperator_id\x18\x02 \x01(\tR\n" +
+	"operatorId\x12$\n" +
+	"\x0etarget_user_id\x18\x03 \x01(\tR\ftargetUserId\x12$\n" +
+	"\x0etarget_team_id\x18\x04 \x01(\tR\ftargetTeamId\"N\n" +
+	"\x12ListPermissionsReq\x12\x17\n" +
+	"\anote_id\x18\x01 \x01(\tR\x06noteId\x12\x1f\n" +
+	"\voperator_id\x18\x02 \x01(\tR\n" +
+	"operatorId\"T\n" +
+	"\x13ListPermissionsResp\x12=\n" +
+	"\vpermissions\x18\x01 \x03(\v2\x1b.syncnoterpc.PermissionInfoR\vpermissions\"\x81\x01\n" +
+	"\x0ePermissionResp\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12;\n" +
+	"\n" +
+	"permission\x18\x03 \x01(\v2\x1b.syncnoterpc.PermissionInfoR\n" +
+	"permission\"\xdf\x02\n" +
+	"\x12CollaborationEvent\x12\x19\n" +
+	"\bevent_id\x18\x01 \x01(\tR\aeventId\x12\x17\n" +
+	"\anote_id\x18\x02 \x01(\tR\x06noteId\x12\x1b\n" +
+	"\tevent_seq\x18\x03 \x01(\x03R\beventSeq\x125\n" +
+	"\n" +
+	"event_type\x18\x04 \x01(\x0e2\x16.syncnoterpc.EventTypeR\teventType\x12\x1f\n" +
+	"\voperator_id\x18\x05 \x01(\tR\n" +
+	"operatorId\x12#\n" +
+	"\roperator_name\x18\x06 \x01(\tR\foperatorName\x12\x18\n" +
+	"\apayload\x18\a \x01(\tR\apayload\x12!\n" +
+	"\fnote_version\x18\b \x01(\x03R\vnoteVersion\x12\x1f\n" +
+	"\vis_conflict\x18\t \x01(\bR\n" +
+	"isConflict\x12\x1d\n" +
+	"\n" +
+	"created_at\x18\n" +
+	" \x01(\x03R\tcreatedAt\"^\n" +
+	"\x10GetNoteEventsReq\x12\x17\n" +
+	"\anote_id\x18\x01 \x01(\tR\x06noteId\x12\x1b\n" +
+	"\tstart_seq\x18\x02 \x01(\x03R\bstartSeq\x12\x14\n" +
+	"\x05limit\x18\x03 \x01(\x05R\x05limit\"g\n" +
+	"\x11GetNoteEventsResp\x127\n" +
+	"\x06events\x18\x01 \x03(\v2\x1f.syncnoterpc.CollaborationEventR\x06events\x12\x19\n" +
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore*\xae\x01\n" +
 	"\bSaveCode\x12\x19\n" +
 	"\x15SAVE_CODE_UNSPECIFIED\x10\x00\x12\x10\n" +
 	"\fSAVE_CODE_OK\x10\x01\x12\x1e\n" +
 	"\x1aSAVE_CODE_VERSION_CONFLICT\x10\x02\x12\x17\n" +
 	"\x13SAVE_CODE_NOT_FOUND\x10\x03\x12\x1b\n" +
-	"\x17SAVE_CODE_INVALID_PARAM\x10\x042\x8e\x02\n" +
+	"\x17SAVE_CODE_INVALID_PARAM\x10\x04\x12\x1f\n" +
+	"\x1bSAVE_CODE_PERMISSION_DENIED\x10\x05*^\n" +
+	"\x04Role\x12\x14\n" +
+	"\x10ROLE_UNSPECIFIED\x10\x00\x12\x0e\n" +
+	"\n" +
+	"ROLE_OWNER\x10\x01\x12\x0e\n" +
+	"\n" +
+	"ROLE_ADMIN\x10\x02\x12\x0f\n" +
+	"\vROLE_EDITOR\x10\x03\x12\x0f\n" +
+	"\vROLE_VIEWER\x10\x04*\x91\x01\n" +
+	"\x10PermissionStatus\x12!\n" +
+	"\x1dPERMISSION_STATUS_UNSPECIFIED\x10\x00\x12\x1c\n" +
+	"\x18PERMISSION_STATUS_ACTIVE\x10\x01\x12\x1d\n" +
+	"\x19PERMISSION_STATUS_REVOKED\x10\x02\x12\x1d\n" +
+	"\x19PERMISSION_STATUS_PENDING\x10\x03*\x9e\x02\n" +
+	"\tEventType\x12\x1a\n" +
+	"\x16EVENT_TYPE_UNSPECIFIED\x10\x00\x12\x1b\n" +
+	"\x17EVENT_TYPE_NOTE_CREATED\x10\x01\x12\x1b\n" +
+	"\x17EVENT_TYPE_NOTE_UPDATED\x10\x02\x12\x1b\n" +
+	"\x17EVENT_TYPE_NOTE_DELETED\x10\x03\x12!\n" +
+	"\x1dEVENT_TYPE_PERMISSION_GRANTED\x10\x04\x12!\n" +
+	"\x1dEVENT_TYPE_PERMISSION_REVOKED\x10\x05\x12 \n" +
+	"\x1cEVENT_TYPE_CONFLICT_DETECTED\x10\x06\x12\x1b\n" +
+	"\x17EVENT_TYPE_VIEW_STARTED\x10\a\x12\x19\n" +
+	"\x15EVENT_TYPE_VIEW_ENDED\x10\b2\xd8\x04\n" +
 	"\vSyncnoterpc\x12?\n" +
 	"\n" +
 	"CreateNote\x12\x1a.syncnoterpc.CreateNoteReq\x1a\x15.syncnoterpc.NoteResp\x126\n" +
 	"\aGetNote\x12\x14.syncnoterpc.NoteReq\x1a\x15.syncnoterpc.NoteResp\x12?\n" +
 	"\bSaveNote\x12\x18.syncnoterpc.SaveNoteReq\x1a\x19.syncnoterpc.SaveNoteResp\x12E\n" +
-	"\fGetUserNotes\x12\x19.syncnoterpc.UserNotesReq\x1a\x1a.syncnoterpc.UserNotesRespB\x0fZ\r./syncnoterpcb\x06proto3"
+	"\fGetUserNotes\x12\x19.syncnoterpc.UserNotesReq\x1a\x1a.syncnoterpc.UserNotesResp\x12O\n" +
+	"\x0fGrantPermission\x12\x1f.syncnoterpc.GrantPermissionReq\x1a\x1b.syncnoterpc.PermissionResp\x12Q\n" +
+	"\x10RevokePermission\x12 .syncnoterpc.RevokePermissionReq\x1a\x1b.syncnoterpc.PermissionResp\x12T\n" +
+	"\x0fListPermissions\x12\x1f.syncnoterpc.ListPermissionsReq\x1a .syncnoterpc.ListPermissionsResp\x12N\n" +
+	"\rGetNoteEvents\x12\x1d.syncnoterpc.GetNoteEventsReq\x1a\x1e.syncnoterpc.GetNoteEventsRespB\x0fZ\r./syncnoterpcb\x06proto3"
 
 var (
 	file_syncNoterpc_proto_rawDescOnce sync.Once
@@ -636,36 +1555,63 @@ func file_syncNoterpc_proto_rawDescGZIP() []byte {
 	return file_syncNoterpc_proto_rawDescData
 }
 
-var file_syncNoterpc_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_syncNoterpc_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_syncNoterpc_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_syncNoterpc_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_syncNoterpc_proto_goTypes = []any{
-	(SaveCode)(0),         // 0: syncnoterpc.SaveCode
-	(*CreateNoteReq)(nil), // 1: syncnoterpc.CreateNoteReq
-	(*NoteReq)(nil),       // 2: syncnoterpc.NoteReq
-	(*SaveNoteReq)(nil),   // 3: syncnoterpc.SaveNoteReq
-	(*NoteResp)(nil),      // 4: syncnoterpc.NoteResp
-	(*NoteSummary)(nil),   // 5: syncnoterpc.NoteSummary
-	(*UserNotesReq)(nil),  // 6: syncnoterpc.UserNotesReq
-	(*UserNotesResp)(nil), // 7: syncnoterpc.UserNotesResp
-	(*SaveNoteResp)(nil),  // 8: syncnoterpc.SaveNoteResp
+	(SaveCode)(0),               // 0: syncnoterpc.SaveCode
+	(Role)(0),                   // 1: syncnoterpc.Role
+	(PermissionStatus)(0),       // 2: syncnoterpc.PermissionStatus
+	(EventType)(0),              // 3: syncnoterpc.EventType
+	(*CreateNoteReq)(nil),       // 4: syncnoterpc.CreateNoteReq
+	(*NoteReq)(nil),             // 5: syncnoterpc.NoteReq
+	(*SaveNoteReq)(nil),         // 6: syncnoterpc.SaveNoteReq
+	(*NoteResp)(nil),            // 7: syncnoterpc.NoteResp
+	(*NoteSummary)(nil),         // 8: syncnoterpc.NoteSummary
+	(*UserNotesReq)(nil),        // 9: syncnoterpc.UserNotesReq
+	(*UserNotesResp)(nil),       // 10: syncnoterpc.UserNotesResp
+	(*SaveNoteResp)(nil),        // 11: syncnoterpc.SaveNoteResp
+	(*PermissionInfo)(nil),      // 12: syncnoterpc.PermissionInfo
+	(*GrantPermissionReq)(nil),  // 13: syncnoterpc.GrantPermissionReq
+	(*RevokePermissionReq)(nil), // 14: syncnoterpc.RevokePermissionReq
+	(*ListPermissionsReq)(nil),  // 15: syncnoterpc.ListPermissionsReq
+	(*ListPermissionsResp)(nil), // 16: syncnoterpc.ListPermissionsResp
+	(*PermissionResp)(nil),      // 17: syncnoterpc.PermissionResp
+	(*CollaborationEvent)(nil),  // 18: syncnoterpc.CollaborationEvent
+	(*GetNoteEventsReq)(nil),    // 19: syncnoterpc.GetNoteEventsReq
+	(*GetNoteEventsResp)(nil),   // 20: syncnoterpc.GetNoteEventsResp
 }
 var file_syncNoterpc_proto_depIdxs = []int32{
-	5, // 0: syncnoterpc.UserNotesResp.notes:type_name -> syncnoterpc.NoteSummary
-	0, // 1: syncnoterpc.SaveNoteResp.code:type_name -> syncnoterpc.SaveCode
-	4, // 2: syncnoterpc.SaveNoteResp.note:type_name -> syncnoterpc.NoteResp
-	1, // 3: syncnoterpc.Syncnoterpc.CreateNote:input_type -> syncnoterpc.CreateNoteReq
-	2, // 4: syncnoterpc.Syncnoterpc.GetNote:input_type -> syncnoterpc.NoteReq
-	3, // 5: syncnoterpc.Syncnoterpc.SaveNote:input_type -> syncnoterpc.SaveNoteReq
-	6, // 6: syncnoterpc.Syncnoterpc.GetUserNotes:input_type -> syncnoterpc.UserNotesReq
-	4, // 7: syncnoterpc.Syncnoterpc.CreateNote:output_type -> syncnoterpc.NoteResp
-	4, // 8: syncnoterpc.Syncnoterpc.GetNote:output_type -> syncnoterpc.NoteResp
-	8, // 9: syncnoterpc.Syncnoterpc.SaveNote:output_type -> syncnoterpc.SaveNoteResp
-	7, // 10: syncnoterpc.Syncnoterpc.GetUserNotes:output_type -> syncnoterpc.UserNotesResp
-	7, // [7:11] is the sub-list for method output_type
-	3, // [3:7] is the sub-list for method input_type
-	3, // [3:3] is the sub-list for extension type_name
-	3, // [3:3] is the sub-list for extension extendee
-	0, // [0:3] is the sub-list for field type_name
+	8,  // 0: syncnoterpc.UserNotesResp.notes:type_name -> syncnoterpc.NoteSummary
+	0,  // 1: syncnoterpc.SaveNoteResp.code:type_name -> syncnoterpc.SaveCode
+	7,  // 2: syncnoterpc.SaveNoteResp.note:type_name -> syncnoterpc.NoteResp
+	1,  // 3: syncnoterpc.PermissionInfo.role:type_name -> syncnoterpc.Role
+	2,  // 4: syncnoterpc.PermissionInfo.status:type_name -> syncnoterpc.PermissionStatus
+	1,  // 5: syncnoterpc.GrantPermissionReq.role:type_name -> syncnoterpc.Role
+	12, // 6: syncnoterpc.ListPermissionsResp.permissions:type_name -> syncnoterpc.PermissionInfo
+	12, // 7: syncnoterpc.PermissionResp.permission:type_name -> syncnoterpc.PermissionInfo
+	3,  // 8: syncnoterpc.CollaborationEvent.event_type:type_name -> syncnoterpc.EventType
+	18, // 9: syncnoterpc.GetNoteEventsResp.events:type_name -> syncnoterpc.CollaborationEvent
+	4,  // 10: syncnoterpc.Syncnoterpc.CreateNote:input_type -> syncnoterpc.CreateNoteReq
+	5,  // 11: syncnoterpc.Syncnoterpc.GetNote:input_type -> syncnoterpc.NoteReq
+	6,  // 12: syncnoterpc.Syncnoterpc.SaveNote:input_type -> syncnoterpc.SaveNoteReq
+	9,  // 13: syncnoterpc.Syncnoterpc.GetUserNotes:input_type -> syncnoterpc.UserNotesReq
+	13, // 14: syncnoterpc.Syncnoterpc.GrantPermission:input_type -> syncnoterpc.GrantPermissionReq
+	14, // 15: syncnoterpc.Syncnoterpc.RevokePermission:input_type -> syncnoterpc.RevokePermissionReq
+	15, // 16: syncnoterpc.Syncnoterpc.ListPermissions:input_type -> syncnoterpc.ListPermissionsReq
+	19, // 17: syncnoterpc.Syncnoterpc.GetNoteEvents:input_type -> syncnoterpc.GetNoteEventsReq
+	7,  // 18: syncnoterpc.Syncnoterpc.CreateNote:output_type -> syncnoterpc.NoteResp
+	7,  // 19: syncnoterpc.Syncnoterpc.GetNote:output_type -> syncnoterpc.NoteResp
+	11, // 20: syncnoterpc.Syncnoterpc.SaveNote:output_type -> syncnoterpc.SaveNoteResp
+	10, // 21: syncnoterpc.Syncnoterpc.GetUserNotes:output_type -> syncnoterpc.UserNotesResp
+	17, // 22: syncnoterpc.Syncnoterpc.GrantPermission:output_type -> syncnoterpc.PermissionResp
+	17, // 23: syncnoterpc.Syncnoterpc.RevokePermission:output_type -> syncnoterpc.PermissionResp
+	16, // 24: syncnoterpc.Syncnoterpc.ListPermissions:output_type -> syncnoterpc.ListPermissionsResp
+	20, // 25: syncnoterpc.Syncnoterpc.GetNoteEvents:output_type -> syncnoterpc.GetNoteEventsResp
+	18, // [18:26] is the sub-list for method output_type
+	10, // [10:18] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_syncNoterpc_proto_init() }
@@ -678,8 +1624,8 @@ func file_syncNoterpc_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_syncNoterpc_proto_rawDesc), len(file_syncNoterpc_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   8,
+			NumEnums:      4,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

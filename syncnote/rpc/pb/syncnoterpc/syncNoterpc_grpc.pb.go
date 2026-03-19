@@ -19,20 +19,35 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Syncnoterpc_CreateNote_FullMethodName   = "/syncnoterpc.Syncnoterpc/CreateNote"
-	Syncnoterpc_GetNote_FullMethodName      = "/syncnoterpc.Syncnoterpc/GetNote"
-	Syncnoterpc_SaveNote_FullMethodName     = "/syncnoterpc.Syncnoterpc/SaveNote"
-	Syncnoterpc_GetUserNotes_FullMethodName = "/syncnoterpc.Syncnoterpc/GetUserNotes"
+	Syncnoterpc_CreateNote_FullMethodName       = "/syncnoterpc.Syncnoterpc/CreateNote"
+	Syncnoterpc_GetNote_FullMethodName          = "/syncnoterpc.Syncnoterpc/GetNote"
+	Syncnoterpc_SaveNote_FullMethodName         = "/syncnoterpc.Syncnoterpc/SaveNote"
+	Syncnoterpc_GetUserNotes_FullMethodName     = "/syncnoterpc.Syncnoterpc/GetUserNotes"
+	Syncnoterpc_GrantPermission_FullMethodName  = "/syncnoterpc.Syncnoterpc/GrantPermission"
+	Syncnoterpc_RevokePermission_FullMethodName = "/syncnoterpc.Syncnoterpc/RevokePermission"
+	Syncnoterpc_ListPermissions_FullMethodName  = "/syncnoterpc.Syncnoterpc/ListPermissions"
+	Syncnoterpc_GetNoteEvents_FullMethodName    = "/syncnoterpc.Syncnoterpc/GetNoteEvents"
 )
 
 // SyncnoterpcClient is the client API for Syncnoterpc service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SyncnoterpcClient interface {
+	// --- Core Note Operations ---
 	CreateNote(ctx context.Context, in *CreateNoteReq, opts ...grpc.CallOption) (*NoteResp, error)
 	GetNote(ctx context.Context, in *NoteReq, opts ...grpc.CallOption) (*NoteResp, error)
 	SaveNote(ctx context.Context, in *SaveNoteReq, opts ...grpc.CallOption) (*SaveNoteResp, error)
 	GetUserNotes(ctx context.Context, in *UserNotesReq, opts ...grpc.CallOption) (*UserNotesResp, error)
+	// --- Permission Management (对应 note_permissions 表) ---
+	// 授予或更新权限
+	GrantPermission(ctx context.Context, in *GrantPermissionReq, opts ...grpc.CallOption) (*PermissionResp, error)
+	// 撤销权限
+	RevokePermission(ctx context.Context, in *RevokePermissionReq, opts ...grpc.CallOption) (*PermissionResp, error)
+	// 获取笔记的所有权限列表
+	ListPermissions(ctx context.Context, in *ListPermissionsReq, opts ...grpc.CallOption) (*ListPermissionsResp, error)
+	// --- Collaboration History (对应 collaboration_events 表) ---
+	// 获取笔记的操作历史/事件流
+	GetNoteEvents(ctx context.Context, in *GetNoteEventsReq, opts ...grpc.CallOption) (*GetNoteEventsResp, error)
 }
 
 type syncnoterpcClient struct {
@@ -83,14 +98,65 @@ func (c *syncnoterpcClient) GetUserNotes(ctx context.Context, in *UserNotesReq, 
 	return out, nil
 }
 
+func (c *syncnoterpcClient) GrantPermission(ctx context.Context, in *GrantPermissionReq, opts ...grpc.CallOption) (*PermissionResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PermissionResp)
+	err := c.cc.Invoke(ctx, Syncnoterpc_GrantPermission_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *syncnoterpcClient) RevokePermission(ctx context.Context, in *RevokePermissionReq, opts ...grpc.CallOption) (*PermissionResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PermissionResp)
+	err := c.cc.Invoke(ctx, Syncnoterpc_RevokePermission_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *syncnoterpcClient) ListPermissions(ctx context.Context, in *ListPermissionsReq, opts ...grpc.CallOption) (*ListPermissionsResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPermissionsResp)
+	err := c.cc.Invoke(ctx, Syncnoterpc_ListPermissions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *syncnoterpcClient) GetNoteEvents(ctx context.Context, in *GetNoteEventsReq, opts ...grpc.CallOption) (*GetNoteEventsResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetNoteEventsResp)
+	err := c.cc.Invoke(ctx, Syncnoterpc_GetNoteEvents_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // SyncnoterpcServer is the server API for Syncnoterpc service.
 // All implementations must embed UnimplementedSyncnoterpcServer
 // for forward compatibility.
 type SyncnoterpcServer interface {
+	// --- Core Note Operations ---
 	CreateNote(context.Context, *CreateNoteReq) (*NoteResp, error)
 	GetNote(context.Context, *NoteReq) (*NoteResp, error)
 	SaveNote(context.Context, *SaveNoteReq) (*SaveNoteResp, error)
 	GetUserNotes(context.Context, *UserNotesReq) (*UserNotesResp, error)
+	// --- Permission Management (对应 note_permissions 表) ---
+	// 授予或更新权限
+	GrantPermission(context.Context, *GrantPermissionReq) (*PermissionResp, error)
+	// 撤销权限
+	RevokePermission(context.Context, *RevokePermissionReq) (*PermissionResp, error)
+	// 获取笔记的所有权限列表
+	ListPermissions(context.Context, *ListPermissionsReq) (*ListPermissionsResp, error)
+	// --- Collaboration History (对应 collaboration_events 表) ---
+	// 获取笔记的操作历史/事件流
+	GetNoteEvents(context.Context, *GetNoteEventsReq) (*GetNoteEventsResp, error)
 	mustEmbedUnimplementedSyncnoterpcServer()
 }
 
@@ -112,6 +178,18 @@ func (UnimplementedSyncnoterpcServer) SaveNote(context.Context, *SaveNoteReq) (*
 }
 func (UnimplementedSyncnoterpcServer) GetUserNotes(context.Context, *UserNotesReq) (*UserNotesResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserNotes not implemented")
+}
+func (UnimplementedSyncnoterpcServer) GrantPermission(context.Context, *GrantPermissionReq) (*PermissionResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GrantPermission not implemented")
+}
+func (UnimplementedSyncnoterpcServer) RevokePermission(context.Context, *RevokePermissionReq) (*PermissionResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method RevokePermission not implemented")
+}
+func (UnimplementedSyncnoterpcServer) ListPermissions(context.Context, *ListPermissionsReq) (*ListPermissionsResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPermissions not implemented")
+}
+func (UnimplementedSyncnoterpcServer) GetNoteEvents(context.Context, *GetNoteEventsReq) (*GetNoteEventsResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetNoteEvents not implemented")
 }
 func (UnimplementedSyncnoterpcServer) mustEmbedUnimplementedSyncnoterpcServer() {}
 func (UnimplementedSyncnoterpcServer) testEmbeddedByValue()                     {}
@@ -206,6 +284,78 @@ func _Syncnoterpc_GetUserNotes_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Syncnoterpc_GrantPermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GrantPermissionReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SyncnoterpcServer).GrantPermission(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Syncnoterpc_GrantPermission_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SyncnoterpcServer).GrantPermission(ctx, req.(*GrantPermissionReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Syncnoterpc_RevokePermission_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RevokePermissionReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SyncnoterpcServer).RevokePermission(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Syncnoterpc_RevokePermission_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SyncnoterpcServer).RevokePermission(ctx, req.(*RevokePermissionReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Syncnoterpc_ListPermissions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPermissionsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SyncnoterpcServer).ListPermissions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Syncnoterpc_ListPermissions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SyncnoterpcServer).ListPermissions(ctx, req.(*ListPermissionsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Syncnoterpc_GetNoteEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNoteEventsReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SyncnoterpcServer).GetNoteEvents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Syncnoterpc_GetNoteEvents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SyncnoterpcServer).GetNoteEvents(ctx, req.(*GetNoteEventsReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Syncnoterpc_ServiceDesc is the grpc.ServiceDesc for Syncnoterpc service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -228,6 +378,22 @@ var Syncnoterpc_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserNotes",
 			Handler:    _Syncnoterpc_GetUserNotes_Handler,
+		},
+		{
+			MethodName: "GrantPermission",
+			Handler:    _Syncnoterpc_GrantPermission_Handler,
+		},
+		{
+			MethodName: "RevokePermission",
+			Handler:    _Syncnoterpc_RevokePermission_Handler,
+		},
+		{
+			MethodName: "ListPermissions",
+			Handler:    _Syncnoterpc_ListPermissions_Handler,
+		},
+		{
+			MethodName: "GetNoteEvents",
+			Handler:    _Syncnoterpc_GetNoteEvents_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
