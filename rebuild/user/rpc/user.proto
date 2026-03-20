@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package userrpc;
+option go_package = "./userrpc";
+
+message GetUserInfoReq {
+  string user_id = 1 [json_name = "userId"];
+}
+
+message UserInfo {
+  string username = 1 [json_name = "username"];
+  string user_id  = 2;
+  string email    = 3 [json_name = "email"];
+  string synopsis = 4 [json_name = "synopsis"];
+  string avatar   = 5 [json_name = "avatar"];
+}
+
+message GetUserInfoResp {
+  UserInfo user_info = 1;
+}
+
+message EditUserInfoReq {
+  string username = 1;
+  string synopsis = 2;
+  string avatar   = 3;
+}
+
+message Empty{}
+
+service UserService {
+  rpc EditUserInfo(EditUserInfoReq) returns (Empty);
+  rpc GetUserInfo(GetUserInfoReq) returns (GetUserInfoResp);
+}

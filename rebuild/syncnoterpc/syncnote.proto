@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package syncnoterpc;
+
+option go_package = "./syncnoterpc";
+
+enum ErrCode {
+  SUCCESS = 0;
+  FAILED  = 1;
+}
+
+message Note {
+  string note_id    = 1;
+  string owner      = 2;
+  bytes  permission = 3;
+  string title      = 4;
+  string content    = 5;
+  int64  version    = 6;
+}
+
+message CreateNoteReq {
+  Note note = 1;
+}
+
+message GetNoteReq {
+  string note_id = 1;
+}
+
+message UpdateNoteReq {
+  Note note = 1;
+}
+
+message DeleteNoteReq {
+  string note_id  = 1;
+  string operator = 2;
+}
+
+message GetNoteResp {
+  Note note = 1;
+}
+
+message GeneralResp {
+  ErrCode code = 1;
+}
+
+service
