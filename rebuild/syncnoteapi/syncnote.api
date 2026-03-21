@@ -2,8 +2,8 @@ syntax = "v1"
 type Empty{}
 type Note {
 	NoteId     string `json:"noteId"`
-	Owner      string `json:"owner"`
-	Permission byte  `json:"permission"`
+	OwnerId    string `json:"ownerId"`
+	Permission byte   `json:"permission"`
 	Title      string `json:"title"`
 	Content    string `json:"content"`
 	Version    int64  `json:"version"`
@@ -38,12 +38,10 @@ type UpdateNoteResp {
 }
 
 type UpdatePermissionReq {
-	Permission byte `json:"permission"`
-	TargetId string `json:"targetId"`
+	Permission byte   `json:"permission"`
+	TargetId   string `json:"targetId"`
 	TargetType string `json:"targetType"`
 }
-
-
 
 @server (
 	middleware: Cors, Auth

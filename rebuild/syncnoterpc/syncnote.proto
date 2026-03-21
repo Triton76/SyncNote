@@ -11,7 +11,7 @@ enum ErrCode {
 
 message Note {
   string note_id    = 1;
-  string owner      = 2;
+  string owner_id   = 2;
   bytes  permission = 3;
   string title      = 4;
   string content    = 5;
@@ -31,16 +31,22 @@ message UpdateNoteReq {
 }
 
 message DeleteNoteReq {
-  string note_id  = 1;
-  string operator = 2;
+  string note_id = 1;
 }
 
 message GetNoteResp {
   Note note = 1;
 }
 
+message GetNoteSummary {
+
+}
+
 message GeneralResp {
   ErrCode code = 1;
 }
 
-service
+service NoteService {
+  rpc GetNote(GetNoteReq) returns (GetNoteResp);
+  rpc GetNoteSummary ();
+}

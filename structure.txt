@@ -1,39 +1,60 @@
+Table Note {
+	note_Id Primary,
+	owner_Id not null,
+	title,
+	content,
+	version,
+	created_at,
+	updated_at
+}
 
-SyncNote/
-├── api/                    # API 服务
-│   ├── etc/
-│   │   └── syncnote-api.yaml
-│   ├── internal/
-│   │   ├── config/
-│   │   ├── handler/        # HTTP 处理器
-│   │   ├── logic/          # 业务逻辑
-│   │   ├── svc/            # 服务上下文
-│   │   └── types/          # 数据类型定义
-│   └── syncnote.go
-├── rpc/                    # RPC 服务
-│   ├── etc/
-│   │   └── syncnote-rpc.yaml
-│   ├── internal/
-│   │   ├── config/
-│   │   ├── server/         # RPC 服务器
-│   │   ├── svc/
-│   │   └── types/
-│   └── syncnote.go
-├── internal/               # 项目内部共享代码
-│   ├── config/             # 共享配置定义
-│   ├── model/              # 数据模型
-│   ├── store/              # 数据访问抽象
-│   └── middleware/         # 中间件
-├── pkg/                    # 可复用的公共包
-│   ├── common/
-│   ├── utils/
-│   └── crypto/
-├── proto/                  # protobuf 定义
-│   └── syncnote.proto
-├── scripts/                # 脚本文件
-│   ├── build.sh
-│   └── deploy.sh
-├── docs/                   # 文档
-├── go.mod
-├── go.sum
-└── Makefile
+
+Table Note_User_Permission {
+	note_Id ref Note(note_Id),
+	user_Id ref User(user_Id),
+	permission_Level not null,
+	granted_by ref User(user_Id),
+	created_at default now(),
+	updated_at default now(),
+	PRIMARY KEY (note_Id, user_Id)
+}
+Table Note_Team_Permission {
+	note_Id ref Note(note_Id),
+	team_Id ref Team(team_Id),
+	permission_Level not null,
+	granted_by ref User(user_Id),
+	created_at default now(),
+	updated_at default now(),
+	PRIMARY KEY (note_Id, team_Id)
+}
+
+Table User {
+	user_Id primary,
+	email Not Null Unique,
+	password Not null
+	created_at,
+	updated_at,
+}
+
+Table UserInfo{
+	user_Id primary ref User(user_Id),
+	synopsis,
+	avatar,
+	username not null
+	created_at,
+	updated_at,
+}
+
+Table Team {
+	team_Id primary,
+	name not null,
+	desc,
+	owner_Id not null ref User(user_Id),
+	created_at,
+	updated_at,
+}
+Table Team_members {
+	team_Id ref Team(team_Id),
+	user_Id ref User(user_Id),
+	PRIMARY KEY (team_Id, user_Id)
+}
