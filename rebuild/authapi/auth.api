@@ -1,8 +1,8 @@
-// 在服务架构中专门用于签发Token，提供给其他服务使用。
 syntax = "v1"
 
 type LoginReq {
-	LoginId  string `json:"loginId"`
+	Email    string `json:"email"`
+	Captcha  string `json:"captcha"`
 	Password string `json:"password"`
 }
 
@@ -10,21 +10,15 @@ type RegisterReq {
 	Email    string `json:"email"`
 	Captcha  string `json:"captcha"`
 	Password string `json:"password"`
-	Username string `json:"username,omitempty"`
 }
 
 type LoginResp {
-	Code   int64  `json:"code"`
-	UserId string `json:"userId"`
-	Token  string `json:"token"`
-	Expire int64  `json:"expire"`
+	Token    string `json:"token"`
+	ExpireIn int64  `json:"expirein"`
 }
 
 type RegisterResp {
-	Code   int64  `json:"code"`
 	UserId string `json:"userId"`
-	Token  string `json:"token"`
-	Expire int64  `json:"expire"`
 }
 
 service auth-api {
@@ -34,3 +28,4 @@ service auth-api {
 	@handler RegisterHandler
 	post /auth/register (RegisterReq) returns (RegisterResp)
 }
+

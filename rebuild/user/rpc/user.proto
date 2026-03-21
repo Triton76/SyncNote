@@ -8,11 +8,10 @@ message GetUserInfoReq {
 }
 
 message UserInfo {
-  string username = 1 [json_name = "username"];
-  string user_id  = 2;
-  string email    = 3 [json_name = "email"];
-  string synopsis = 4 [json_name = "synopsis"];
-  string avatar   = 5 [json_name = "avatar"];
+  string username   = 1 [json_name = "username"];
+  string user_id    = 2;
+  string synopsis   = 3 [json_name = "synopsis"];
+  string avatar_url = 4 [json_name = "avatarUrl"];
 }
 
 message GetUserInfoResp {
@@ -29,5 +28,5 @@ message Empty{}
 
 service UserService {
   rpc EditUserInfo(EditUserInfoReq) returns (Empty);
-  rpc GetUserInfo(GetUserInfoReq) returns (GetUserInfoResp);
+  rpc GetUserInfoById(GetUserInfoReq) returns (GetUserInfoResp);
 }
