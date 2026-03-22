@@ -30,7 +30,13 @@ func (l *SearchUserLogic) SearchUser(req *types.SearchReq) (resp *types.SearchRe
 		return nil, errors.New("email required")
 	}
 
-	inforesp, err := l.svcCtx.UserRpc.GetUserInfoByEmail(l.ctx, &userrpc.GetUserInfoByEmailReq{Email: req.Email})
+	callerUserID, err := getUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	rpcCtx := withRPCUserID(l.ctx, callerUserID)
+	inforesp, err := l.svcCtx.UserRpc.GetUserInfoByEmail(rpcCtx, &userrpc.GetUserInfoByEmailReq{Email: req.Email})
 	if err != nil {
 		return nil, err
 	}

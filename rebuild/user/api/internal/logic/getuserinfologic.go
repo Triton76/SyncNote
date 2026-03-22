@@ -30,7 +30,13 @@ func (l *GetUserInfoLogic) GetUserInfo(req *types.GetUserInfoReq) (resp *types.G
 		return nil, errors.New("userId required")
 	}
 
-	inforesp, err := l.svcCtx.UserRpc.GetUserInfoById(l.ctx, &userrpc.GetUserInfoReq{UserId: req.UserId})
+	callerUserID, err := getUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	rpcCtx := withRPCUserID(l.ctx, callerUserID)
+	inforesp, err := l.svcCtx.UserRpc.GetUserInfoById(rpcCtx, &userrpc.GetUserInfoReq{UserId: req.UserId})
 	if err != nil {
 		return nil, err
 	}

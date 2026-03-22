@@ -57,7 +57,7 @@ func (l *RegisterLogic) Register(req *types.RegisterReq) (resp *types.RegisterRe
 		Username: util.GenerateReadableUsername(),
 	}
 
-	//让ai帮忙改成事务查询了。 原先是两表单独插入，不保证数据一致性。
+	//让ai帮忙改成事务插入了。 原先是两表单独插入，不保证数据一致性。
 	err = l.svcCtx.DB.TransactCtx(l.ctx, func(ctx context.Context, session sqlx.Session) error {
 		txUserModel := model.NewUserModel(sqlx.NewSqlConnFromSession(session))
 		txUserInfoModel := model.NewUserInfoModel(sqlx.NewSqlConnFromSession(session))

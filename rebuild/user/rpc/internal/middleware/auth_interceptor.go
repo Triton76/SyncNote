@@ -11,20 +11,23 @@ import (
 
 type contextKey string
 
-const UserIDKey contextKey = "user_id"
+const UserIDKey contextKey = "userId"
 
 // AuthInterceptor gRPC 认证拦截器
 func AuthInterceptor() grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
-		// 从 metadata 提取 user_id
+		// 从 metadata 提取 userId（兼容 user_id）
 		md, ok := metadata.FromIncomingContext(ctx)
 		if !ok {
 			return nil, status.Error(codes.Unauthenticated, "missing metadata")
 		}
 
-		userIDs := md.Get("user_id")
+		userIDs := md.Get("userId")
 		if len(userIDs) == 0 {
-			return nil, status.Error(codes.Unauthenticated, "missing user_id")
+			userIDs = md.Get("user_id")
+		}
+		if len(userIDs) == 0 {
+			return nil, status.Error(codes.Unauthenticated, "missing user id")
 		}
 
 		// 注入到 context

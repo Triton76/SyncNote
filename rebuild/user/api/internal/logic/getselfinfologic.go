@@ -2,7 +2,6 @@ package logic
 
 import (
 	"context"
-	"errors"
 
 	"SyncNote/rebuild/user/api/internal/svc"
 	"SyncNote/rebuild/user/api/internal/types"
@@ -26,19 +25,16 @@ func NewGetSelfInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetSe
 }
 
 func (l *GetSelfInfoLogic) GetSelfInfo() (resp *types.GetUserInfoResp, err error) {
-	userId := l.ctx.Value("userId")
-	if userId == nil {
-		return nil, errors.New("user not authenticated")
-	}
-	userIdStr, ok := userId.(string)
-	if !ok || userIdStr == "" {
-		return nil, errors.New("invalid user id")
+	userID, err := getUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	getUserInfoReq := &userrpc.GetUserInfoReq{
-		UserId: userIdStr,
+		UserId: userID,
 	}
-	inforesp, err := l.svcCtx.UserRpc.GetUserInfoById(l.ctx, getUserInfoReq)
+	rpcCtx := withRPCUserID(l.ctx, userID)
+	inforesp, err := l.svcCtx.UserRpc.GetUserInfoById(rpcCtx, getUserInfoReq)
 	if err != nil {
 		return nil, err
 	}

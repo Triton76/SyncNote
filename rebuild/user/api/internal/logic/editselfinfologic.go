@@ -25,11 +25,17 @@ func NewEditSelfInfoLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Edit
 }
 
 func (l *EditSelfInfoLogic) EditSelfInfo(req *types.EditReq) (resp *types.EmptyResp, err error) {
+	userID, err := getUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	editReq := &userrpc.EditUserInfoReq{Username: req.Username,
 		Synopsis:  req.Synopsis,
 		AvatarUrl: req.AvatarUrl,
 	}
-	_, err = l.svcCtx.UserRpc.EditUserInfo(l.ctx, editReq)
+	rpcCtx := withRPCUserID(l.ctx, userID)
+	_, err = l.svcCtx.UserRpc.EditUserInfo(rpcCtx, editReq)
 	if err != nil {
 		return nil, err
 	}
