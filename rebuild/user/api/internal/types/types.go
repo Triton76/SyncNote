@@ -21,7 +21,7 @@ type GetUserInfoResp struct {
 }
 
 type SearchReq struct {
-	Email string `json:"email" in:"query"`
+	Email string `form:"email"`
 }
 
 type SearchResp struct {

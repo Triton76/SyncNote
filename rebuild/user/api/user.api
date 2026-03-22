@@ -23,7 +23,7 @@ type EditReq {
 }
 
 type SearchReq {
-	Email string `json:"email" in:"query"`
+	Email string `form:"email"`
 }
 
 type SearchResp {
