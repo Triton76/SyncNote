@@ -5,6 +5,7 @@ import (
 
 	"SyncNote/rebuild/syncnote/api/internal/svc"
 	"SyncNote/rebuild/syncnote/api/internal/types"
+	"SyncNote/rebuild/syncnote/rpc/pb/syncnoterpc"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -25,7 +26,21 @@ func NewUpdateNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Update
 }
 
 func (l *UpdateNoteLogic) UpdateNote(req *types.UpdateNoteRequest) (resp *types.UpdateNoteResponse, err error) {
-	// todo: add your logic here and delete this line
+	userID, err := getUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	rpcCtx := withRPCUserID(l.ctx, userID)
+	rpcResp, err := l.svcCtx.SyncnoteRpc.UpdateNote(rpcCtx, &syncnoterpc.UpdateNoteRequest{
+		NoteId:  req.NoteId,
+		Title:   req.Title,
+		Content: req.Content,
+		Version: req.Version,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.UpdateNoteResponse{Note: toAPINote(rpcResp.GetNote())}, nil
 }

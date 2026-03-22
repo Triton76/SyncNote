@@ -5,6 +5,7 @@ import (
 
 	"SyncNote/rebuild/syncnote/api/internal/svc"
 	"SyncNote/rebuild/syncnote/api/internal/types"
+	"SyncNote/rebuild/syncnote/rpc/pb/syncnoterpc"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -25,7 +26,16 @@ func NewJoinTeamLogic(ctx context.Context, svcCtx *svc.ServiceContext) *JoinTeam
 }
 
 func (l *JoinTeamLogic) JoinTeam(req *types.JoinTeamRequest) (resp *types.JoinTeamResponse, err error) {
-	// todo: add your logic here and delete this line
+	userID, err := getUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	rpcCtx := withRPCUserID(l.ctx, userID)
+	rpcResp, err := l.svcCtx.SyncnoteRpc.JoinTeam(rpcCtx, &syncnoterpc.JoinTeamRequest{TeamId: req.TeamId})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.JoinTeamResponse{Success: rpcResp.GetSuccess()}, nil
 }

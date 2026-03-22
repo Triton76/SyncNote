@@ -5,6 +5,7 @@ import (
 
 	"SyncNote/rebuild/syncnote/api/internal/svc"
 	"SyncNote/rebuild/syncnote/api/internal/types"
+	"SyncNote/rebuild/syncnote/rpc/pb/syncnoterpc"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -25,7 +26,19 @@ func NewRevokeNotePermissionLogic(ctx context.Context, svcCtx *svc.ServiceContex
 }
 
 func (l *RevokeNotePermissionLogic) RevokeNotePermission(req *types.RevokeNotePermissionRequest) (resp *types.RevokeNotePermissionResponse, err error) {
-	// todo: add your logic here and delete this line
+	userID, err := getUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	rpcCtx := withRPCUserID(l.ctx, userID)
+	rpcResp, err := l.svcCtx.SyncnoteRpc.RevokeNotePermission(rpcCtx, &syncnoterpc.RevokeNotePermissionRequest{
+		NoteId:       req.NoteId,
+		TargetUserId: req.TargetUserId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.RevokeNotePermissionResponse{Success: rpcResp.GetSuccess()}, nil
 }

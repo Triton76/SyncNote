@@ -11,6 +11,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/zeromicro/go-zero/core/logx"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type CreateNoteLogic struct {
@@ -29,6 +31,10 @@ func NewCreateNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Create
 
 func (l *CreateNoteLogic) CreateNote(in *syncnoterpc.CreateNoteRequest) (*syncnoterpc.CreateNoteResponse, error) {
 	// 创建，插入数据库，设置owner为当前用户。
+	if in.GetTitle() == "" {
+		return nil, status.Error(codes.InvalidArgument, "title is required")
+	}
+
 	userId, err := middleware.GetUserFromContext(l.ctx)
 	if err != nil {
 		return nil, err

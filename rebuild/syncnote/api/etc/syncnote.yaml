@@ -1,3 +1,9 @@
 Name: syncnote
 Host: 0.0.0.0
-Port: 8888
+Port: 8001
+Cors: "*"
+SyncnoteRpc:
+	Etcd:
+		Hosts:
+			- 127.0.0.1:2379
+		Key: syncnote.rpc

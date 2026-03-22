@@ -75,6 +75,7 @@ func (l *GrantNotePermissionLogic) GrantNotePermission(in *syncnoterpc.GrantNote
 		}
 	}
 
+	//鉴权通过准备授予权限，接下来看授予权限的对象存不存在。
 	if _, err := l.svcCtx.UserModel.FindOne(l.ctx, in.GetTargetUserId()); err != nil {
 		if err == model.ErrNotFound {
 			return nil, status.Error(codes.NotFound, "target user not found")
@@ -83,6 +84,7 @@ func (l *GrantNotePermissionLogic) GrantNotePermission(in *syncnoterpc.GrantNote
 	}
 
 	grantedBy := sql.NullString{String: operatorID, Valid: true}
+	//接下来查有没有已经存在的权限记录
 	existing, err := l.svcCtx.NoteUserPermissionModel.FindOneByNoteIdUserId(l.ctx, in.GetNoteId(), in.GetTargetUserId())
 	if err != nil && err != model.ErrNotFound {
 		return nil, err
@@ -95,6 +97,7 @@ func (l *GrantNotePermissionLogic) GrantNotePermission(in *syncnoterpc.GrantNote
 		GrantedBy: operatorID,
 	}
 
+	//没查到对应权限记录，进行下面的if
 	if err == model.ErrNotFound {
 		record := &model.NoteUserPermission{
 			PermissionId:    uuid.NewString(),
@@ -108,6 +111,7 @@ func (l *GrantNotePermissionLogic) GrantNotePermission(in *syncnoterpc.GrantNote
 		}
 		permission.PermissionId = record.PermissionId
 	} else {
+		//查到了就update
 		existing.PermissionLevel = level
 		existing.GrantedBy = grantedBy
 		if updateErr := l.svcCtx.NoteUserPermissionModel.Update(l.ctx, existing); updateErr != nil {

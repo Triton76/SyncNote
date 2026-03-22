@@ -5,6 +5,7 @@ import (
 
 	"SyncNote/rebuild/syncnote/api/internal/svc"
 	"SyncNote/rebuild/syncnote/api/internal/types"
+	"SyncNote/rebuild/syncnote/rpc/pb/syncnoterpc"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -25,7 +26,16 @@ func NewExitTeamLogic(ctx context.Context, svcCtx *svc.ServiceContext) *ExitTeam
 }
 
 func (l *ExitTeamLogic) ExitTeam(req *types.ExitTeamRequest) (resp *types.ExitTeamResponse, err error) {
-	// todo: add your logic here and delete this line
+	userID, err := getUserIDFromContext(l.ctx)
+	if err != nil {
+		return nil, err
+	}
 
-	return
+	rpcCtx := withRPCUserID(l.ctx, userID)
+	rpcResp, err := l.svcCtx.SyncnoteRpc.ExitTeam(rpcCtx, &syncnoterpc.ExitTeamRequest{TeamId: req.TeamId})
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.ExitTeamResponse{Success: rpcResp.GetSuccess()}, nil
 }
