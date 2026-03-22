@@ -24,7 +24,7 @@ func NewDeleteNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Delete
 }
 
 func (l *DeleteNoteLogic) DeleteNote(in *syncnoterpc.DeleteNoteRequest) (*syncnoterpc.DeleteNoteResponse, error) {
-	// todo: add your logic here and delete this line
-
+	// 目前还是硬删除逻辑,要做鉴权（先查user permission，若user permission不符合再查团队权限，若都不符合拒绝）。
+	
 	return &syncnoterpc.DeleteNoteResponse{}, nil
 }

@@ -33,16 +33,23 @@ func (l *CreateNoteLogic) CreateNote(in *syncnoterpc.CreateNoteRequest) (*syncno
 	if err != nil {
 		return nil, err
 	}
-	content := sql.NullString{String: in.content, Valid: in.content != ""}
-	res, err := l.svcCtx.NoteModel.Insert(l.ctx, &model.Note{
+	content := sql.NullString{String: in.Content, Valid: in.Content != ""}
+	note := &model.Note{
 		NoteId:  uuid.NewString(),
 		OwnerId: userId,
 		Title:   in.Title,
 		Content: content,
 		Version: 1,
-	})
+	}
+	_, err = l.svcCtx.NoteModel.Insert(l.ctx, note)
 	if err != nil {
 		return nil, err
 	}
-	return &syncnoterpc.CreateNoteResponse{}, nil
+	return &syncnoterpc.CreateNoteResponse{Note: &syncnoterpc.Note{
+		NoteId:  note.NoteId,
+		OwnerId: note.OwnerId,
+		Title:   note.Title,
+		Content: note.Content.String,
+		Version: int32(note.Version),
+	}}, nil
 }
