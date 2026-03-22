@@ -7,11 +7,16 @@ message GetUserInfoReq {
   string user_id = 1 [json_name = "userId"];
 }
 
+message GetUserInfoByEmailReq {
+  string email = 1 [json_name = "email"];
+}
+
 message UserInfo {
   string username   = 1 [json_name = "username"];
   string user_id    = 2;
   string synopsis   = 3 [json_name = "synopsis"];
   string avatar_url = 4 [json_name = "avatarUrl"];
+  string email      = 5 [json_name = "email"];
 }
 
 message GetUserInfoResp {
@@ -19,9 +24,9 @@ message GetUserInfoResp {
 }
 
 message EditUserInfoReq {
-  string username = 1;
-  string synopsis = 2;
-  string avatar   = 3;
+  string username   = 1;
+  string synopsis   = 2;
+  string avatar_url = 3;
 }
 
 message Empty{}
@@ -29,4 +34,5 @@ message Empty{}
 service UserService {
   rpc EditUserInfo(EditUserInfoReq) returns (Empty);
   rpc GetUserInfoById(GetUserInfoReq) returns (GetUserInfoResp);
+  rpc GetUserInfoByEmail(GetUserInfoByEmailReq) returns (GetUserInfoResp);
 }

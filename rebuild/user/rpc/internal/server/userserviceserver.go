@@ -32,3 +32,8 @@ func (s *UserServiceServer) GetUserInfoById(ctx context.Context, in *userrpc.Get
 	l := logic.NewGetUserInfoByIdLogic(ctx, s.svcCtx)
 	return l.GetUserInfoById(in)
 }
+
+func (s *UserServiceServer) GetUserInfoByEmail(ctx context.Context, in *userrpc.GetUserInfoByEmailReq) (*userrpc.GetUserInfoResp, error) {
+	l := logic.NewGetUserInfoByEmailLogic(ctx, s.svcCtx)
+	return l.GetUserInfoByEmail(in)
+}

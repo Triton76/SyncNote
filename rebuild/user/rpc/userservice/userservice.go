@@ -14,15 +14,17 @@ import (
 )
 
 type (
-	EditUserInfoReq = userrpc.EditUserInfoReq
-	Empty           = userrpc.Empty
-	GetUserInfoReq  = userrpc.GetUserInfoReq
-	GetUserInfoResp = userrpc.GetUserInfoResp
-	UserInfo        = userrpc.UserInfo
+	EditUserInfoReq       = userrpc.EditUserInfoReq
+	Empty                 = userrpc.Empty
+	GetUserInfoByEmailReq = userrpc.GetUserInfoByEmailReq
+	GetUserInfoReq        = userrpc.GetUserInfoReq
+	GetUserInfoResp       = userrpc.GetUserInfoResp
+	UserInfo              = userrpc.UserInfo
 
 	UserService interface {
 		EditUserInfo(ctx context.Context, in *EditUserInfoReq, opts ...grpc.CallOption) (*Empty, error)
 		GetUserInfoById(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResp, error)
+		GetUserInfoByEmail(ctx context.Context, in *GetUserInfoByEmailReq, opts ...grpc.CallOption) (*GetUserInfoResp, error)
 	}
 
 	defaultUserService struct {
@@ -44,4 +46,9 @@ func (m *defaultUserService) EditUserInfo(ctx context.Context, in *EditUserInfoR
 func (m *defaultUserService) GetUserInfoById(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResp, error) {
 	client := userrpc.NewUserServiceClient(m.cli.Conn())
 	return client.GetUserInfoById(ctx, in, opts...)
+}
+
+func (m *defaultUserService) GetUserInfoByEmail(ctx context.Context, in *GetUserInfoByEmailReq, opts ...grpc.CallOption) (*GetUserInfoResp, error) {
+	client := userrpc.NewUserServiceClient(m.cli.Conn())
+	return client.GetUserInfoByEmail(ctx, in, opts...)
 }

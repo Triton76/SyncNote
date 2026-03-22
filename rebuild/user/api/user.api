@@ -1,38 +1,51 @@
 syntax = "v1"
 
 type UserInfo {
-	Username string `json:"username"`
-	UserId   string `json:"userId"`
-	Email    string `json:"email"`
-	Synopsis string `json:"synopsis"`
-	Avatar   string `json:"avatar"`
+	Username  string `json:"username"`
+	UserId    string `json:"userId"`
+	Email     string `json:"email"`
+	Synopsis  string `json:"synopsis"`
+	AvatarUrl string `json:"avatarUrl"`
 }
+
 type GetUserInfoResp {
 	UserInfo
 }
+
+type GetUserInfoReq {
+	UserId string `path:"userid"`
+}
+
 type EditReq {
-	Username string `json:"username"`
-	Synopsis string `json:"synopsis"`
-	Avatar   string `json:"avatar"`
+	Username  string `json:"username"`
+	Synopsis  string `json:"synopsis"`
+	AvatarUrl string `json:"avatarUrl"`
 }
 
 type SearchReq {
 	Email string `json:"email" in:"query"`
 }
+
 type SearchResp {
 	InfoList []UserInfo `json:"infoList"`
 	Total    int64      `json:"total"`
 }
-type EmptyResp {
-}
 
-service UserAPI{
+type EmptyResp {}
+
+@server (
+	jwt: Auth
+)
+service UserAPI {
 	@handler GetSelfInfoHandler
-	get /api/user/me () returns (GetUserInfoResp)
+	get /api/user/me returns (GetUserInfoResp)
+
 	@handler GetUserInfoHandler
-	get /api/user/:userid/info () returns (GetUserInfoResp)
+	get /api/user/:userid/info (GetUserInfoReq) returns (GetUserInfoResp)
+
 	@handler EditSelfInfoHandler
 	post /api/user/edit/me (EditReq) returns (EmptyResp)
+
 	@handler SearchUserHandler
 	get /api/user/search (SearchReq) returns (SearchResp)
 }

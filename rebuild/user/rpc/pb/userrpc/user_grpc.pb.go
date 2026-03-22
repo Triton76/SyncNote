@@ -19,8 +19,9 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	UserService_EditUserInfo_FullMethodName    = "/userrpc.UserService/EditUserInfo"
-	UserService_GetUserInfoById_FullMethodName = "/userrpc.UserService/GetUserInfoById"
+	UserService_EditUserInfo_FullMethodName       = "/userrpc.UserService/EditUserInfo"
+	UserService_GetUserInfoById_FullMethodName    = "/userrpc.UserService/GetUserInfoById"
+	UserService_GetUserInfoByEmail_FullMethodName = "/userrpc.UserService/GetUserInfoByEmail"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -29,6 +30,7 @@ const (
 type UserServiceClient interface {
 	EditUserInfo(ctx context.Context, in *EditUserInfoReq, opts ...grpc.CallOption) (*Empty, error)
 	GetUserInfoById(ctx context.Context, in *GetUserInfoReq, opts ...grpc.CallOption) (*GetUserInfoResp, error)
+	GetUserInfoByEmail(ctx context.Context, in *GetUserInfoByEmailReq, opts ...grpc.CallOption) (*GetUserInfoResp, error)
 }
 
 type userServiceClient struct {
@@ -59,12 +61,23 @@ func (c *userServiceClient) GetUserInfoById(ctx context.Context, in *GetUserInfo
 	return out, nil
 }
 
+func (c *userServiceClient) GetUserInfoByEmail(ctx context.Context, in *GetUserInfoByEmailReq, opts ...grpc.CallOption) (*GetUserInfoResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetUserInfoResp)
+	err := c.cc.Invoke(ctx, UserService_GetUserInfoByEmail_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations must embed UnimplementedUserServiceServer
 // for forward compatibility.
 type UserServiceServer interface {
 	EditUserInfo(context.Context, *EditUserInfoReq) (*Empty, error)
 	GetUserInfoById(context.Context, *GetUserInfoReq) (*GetUserInfoResp, error)
+	GetUserInfoByEmail(context.Context, *GetUserInfoByEmailReq) (*GetUserInfoResp, error)
 	mustEmbedUnimplementedUserServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedUserServiceServer) EditUserInfo(context.Context, *EditUserInf
 }
 func (UnimplementedUserServiceServer) GetUserInfoById(context.Context, *GetUserInfoReq) (*GetUserInfoResp, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetUserInfoById not implemented")
+}
+func (UnimplementedUserServiceServer) GetUserInfoByEmail(context.Context, *GetUserInfoByEmailReq) (*GetUserInfoResp, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetUserInfoByEmail not implemented")
 }
 func (UnimplementedUserServiceServer) mustEmbedUnimplementedUserServiceServer() {}
 func (UnimplementedUserServiceServer) testEmbeddedByValue()                     {}
@@ -138,6 +154,24 @@ func _UserService_GetUserInfoById_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_GetUserInfoByEmail_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetUserInfoByEmailReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).GetUserInfoByEmail(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_GetUserInfoByEmail_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).GetUserInfoByEmail(ctx, req.(*GetUserInfoByEmailReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetUserInfoById",
 			Handler:    _UserService_GetUserInfoById_Handler,
+		},
+		{
+			MethodName: "GetUserInfoByEmail",
+			Handler:    _UserService_GetUserInfoByEmail_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

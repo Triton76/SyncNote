@@ -11,39 +11,41 @@ import (
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
 )
 
-type GetUserInfoByIdLogic struct {
+type GetUserInfoByEmailLogic struct {
 	ctx    context.Context
 	svcCtx *svc.ServiceContext
 	logx.Logger
 }
 
-func NewGetUserInfoByIdLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUserInfoByIdLogic {
-	return &GetUserInfoByIdLogic{
+func NewGetUserInfoByEmailLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GetUserInfoByEmailLogic {
+	return &GetUserInfoByEmailLogic{
 		ctx:    ctx,
 		svcCtx: svcCtx,
 		Logger: logx.WithContext(ctx),
 	}
 }
 
-func (l *GetUserInfoByIdLogic) GetUserInfoById(in *userrpc.GetUserInfoReq) (*userrpc.GetUserInfoResp, error) {
-	//目前默认用户都是公开的
-	if in.UserId == "" {
-		return nil, errors.New("userId required")
+func (l *GetUserInfoByEmailLogic) GetUserInfoByEmail(in *userrpc.GetUserInfoByEmailReq) (*userrpc.GetUserInfoResp, error) {
+	if in.Email == "" {
+		return nil, errors.New("email required")
 	}
-	userInfo, err := l.svcCtx.UserInfoModel.FindOne(l.ctx, in.UserId)
+
+	user, err := l.svcCtx.UserModel.FindOneByEmail(l.ctx, in.Email)
 	if err != nil {
 		if errors.Is(err, sqlx.ErrNotFound) {
 			return nil, errors.New("user not found")
 		}
 		return nil, err
 	}
-	user, err := l.svcCtx.UserModel.FindOne(l.ctx, in.UserId)
+
+	userInfo, err := l.svcCtx.UserInfoModel.FindOne(l.ctx, user.UserId)
 	if err != nil {
 		if errors.Is(err, sqlx.ErrNotFound) {
 			return nil, errors.New("user not found")
 		}
 		return nil, err
 	}
+
 	return &userrpc.GetUserInfoResp{
 		UserInfo: &userrpc.UserInfo{
 			Username:  userInfo.Username,
