@@ -23,6 +23,7 @@ FRONTEND_LOG_FILE="$LOG_DIR/frontend.log"
 FRONTEND_PORT="${FRONTEND_PORT:-5173}"
 START_FRONTEND="${START_FRONTEND:-1}"
 AUTO_NPM_INSTALL="${AUTO_NPM_INSTALL:-1}"
+AUTO_REMOVE_CONFLICT_CONTAINERS="${AUTO_REMOVE_CONFLICT_CONTAINERS:-1}"
 STARTUP_RETRIES="${STARTUP_RETRIES:-300}"
 FRONTEND_RETRIES="${FRONTEND_RETRIES:-300}"
 
@@ -87,6 +88,52 @@ wait_tcp_ready() {
     fi
     sleep 0.3
   done
+  return 1
+}
+
+compose_project_name() {
+  if [[ -n "${COMPOSE_PROJECT_NAME:-}" ]]; then
+    echo "$COMPOSE_PROJECT_NAME"
+    return 0
+  fi
+  basename "$ROOT_DIR" | tr '[:upper:]' '[:lower:]'
+}
+
+ensure_container_name_available() {
+  local expected_name="$1"
+  local expected_service="$2"
+  local current_project
+  current_project="$(compose_project_name)"
+
+  if ! docker container inspect "$expected_name" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local c_project c_service state
+  c_project="$(docker inspect -f '{{ index .Config.Labels "com.docker.compose.project" }}' "$expected_name" 2>/dev/null || true)"
+  c_service="$(docker inspect -f '{{ index .Config.Labels "com.docker.compose.service" }}' "$expected_name" 2>/dev/null || true)"
+  state="$(docker inspect -f '{{.State.Status}}' "$expected_name" 2>/dev/null || echo unknown)"
+
+  if [[ "$c_project" == "$current_project" && "$c_service" == "$expected_service" ]]; then
+    return 0
+  fi
+
+  if [[ "$state" == "running" ]]; then
+    echo "[ERR] container name conflict: '$expected_name' is already used by a running container"
+    echo "[HINT] stop/remove it manually, or rename it, then rerun start_all.sh"
+    echo "[HINT] inspect: docker ps -a --filter name='^/$expected_name$'"
+    return 1
+  fi
+
+  if [[ "$AUTO_REMOVE_CONFLICT_CONTAINERS" == "1" ]]; then
+    echo "[WARN] removing stale conflicting container '$expected_name' (state=$state)"
+    docker rm "$expected_name" >/dev/null
+    return 0
+  fi
+
+  echo "[ERR] container name conflict: '$expected_name' exists (state=$state)"
+  echo "[HINT] remove it manually: docker rm $expected_name"
+  echo "[HINT] or rerun with AUTO_REMOVE_CONFLICT_CONTAINERS=1"
   return 1
 }
 
@@ -190,6 +237,9 @@ start_frontend_if_missing() {
 echo "========================================"
 echo "Step 1/3: Start infra services via docker compose"
 echo "========================================"
+ensure_container_name_available "etcd" "etcd"
+ensure_container_name_available "redis" "redis"
+ensure_container_name_available "mysql" "mysql"
 (
   cd "$ROOT_DIR"
   docker compose up -d
