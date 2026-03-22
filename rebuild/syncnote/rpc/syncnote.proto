@@ -1,0 +1,223 @@
+syntax = "proto3";
+
+package syncnoterpc;
+
+option go_package = "./syncnoterpc";
+
+import "google/protobuf/timestamp.proto";
+
+// ============ 枚举定义 ============
+enum PermissionLevel {
+  PERMISSION_LEVEL_UNSPECIFIED = 0;
+  PERMISSION_LEVEL_READ        = 1;
+  PERMISSION_LEVEL_WRITE       = 2;
+  PERMISSION_LEVEL_ADMIN       = 3;
+}
+
+// ============ 通用消息 ============
+message PaginationRequest {
+  int32 page      = 1;
+  int32 page_size = 2;
+}
+
+message PaginationResponse {
+  int32 total     = 1;
+  int32 page      = 2;
+  int32 page_size = 3;
+  bool  has_more  = 4;
+}
+
+// ============ 核心消息 ============
+message Note {
+  string                    note_id    = 1;
+  string                    owner_id   = 2;
+  string                    title      = 3;
+  string                    content    = 4;
+  int32                     version    = 5;
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+message UserPermission {
+  string                    permission_id = 1;
+  string                    note_id       = 2;
+  string                    user_id       = 3;
+  PermissionLevel           level         = 4;
+  string                    granted_by    = 5;
+  google.protobuf.Timestamp created_at    = 6;
+}
+
+message Team {
+  string                    team_id     = 1;
+  string                    name        = 2;
+  string                    description = 3;
+  string                    owner_id    = 4;
+  google.protobuf.Timestamp created_at  = 5;
+  google.protobuf.Timestamp updated_at  = 6;
+}
+
+message TeamMember {
+  string                    id        = 1;
+  string                    team_id   = 2;
+  string                    user_id   = 3;
+  string                    username  = 4;
+  google.protobuf.Timestamp joined_at = 5;
+}
+
+// ============ Note 服务请求/响应 ============
+message CreateNoteRequest {
+  string title   = 1;
+  string content = 2;
+}
+
+message CreateNoteResponse {
+  Note note = 1;
+}
+
+message GetNoteRequest {
+  string note_id = 1;
+}
+
+message GetNoteResponse {
+  Note note = 1;
+}
+
+message UpdateNoteRequest {
+  string note_id = 1;
+  string title   = 2;
+  string content = 3;
+  int32  version = 4; // 乐观锁
+}
+
+message UpdateNoteResponse {
+  Note note = 1;
+}
+
+message DeleteNoteRequest {
+  string note_id = 1;
+}
+
+message DeleteNoteResponse {
+  bool success = 1;
+}
+
+message ListNotesRequest {
+  PaginationRequest pagination = 1;
+  string            owner_id   = 2;
+}
+
+message ListNotesResponse {
+  repeated Note      notes      = 1;
+  PaginationResponse pagination = 2;
+}
+
+// 权限相关
+message GrantNotePermissionRequest {
+  string          note_id        = 1;
+  string          target_user_id = 2;
+  PermissionLevel level          = 3;
+}
+
+message GrantNotePermissionResponse {
+  UserPermission permission = 1;
+}
+
+message RevokeNotePermissionRequest {
+  string note_id        = 1;
+  string target_user_id = 2;
+}
+
+message RevokeNotePermissionResponse {
+  bool success = 1;
+}
+
+message ListNotePermissionsRequest {
+  string note_id = 1;
+}
+
+message ListNotePermissionsResponse {
+  repeated UserPermission permissions = 1;
+}
+
+// ============ Team 服务请求/响应 ============
+message CreateTeamRequest {
+  string name        = 1;
+  string description = 2;
+}
+
+message CreateTeamResponse {
+  Team team = 1;
+}
+
+message GetTeamRequest {
+  string team_id = 1;
+}
+
+message GetTeamResponse {
+  Team team = 1;
+}
+
+message UpdateTeamRequest {
+  string team_id     = 1;
+  string name        = 2;
+  string description = 3;
+}
+
+message UpdateTeamResponse {
+  Team team = 1;
+}
+
+message DeleteTeamRequest {
+  string team_id = 1;
+}
+
+message DeleteTeamResponse {
+  bool success = 1;
+}
+
+message JoinTeamRequest {
+  string team_id = 1;
+}
+
+message JoinTeamResponse {
+  bool success = 1;
+}
+
+message ExitTeamRequest {
+  string team_id = 1;
+}
+
+message ExitTeamResponse {
+  bool success = 1;
+}
+
+message ListTeamMembersRequest {
+  string            team_id    = 1;
+  PaginationRequest pagination = 2;
+}
+
+message ListTeamMembersResponse {
+  repeated TeamMember members    = 1;
+  PaginationResponse  pagination = 2;
+}
+
+// ============ 服务定义 ============
+service NoteService {
+  rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse);
+  rpc GetNote(GetNoteRequest) returns (GetNoteResponse);
+  rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse);
+  rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse);
+  rpc ListNotes(ListNotesRequest) returns (ListNotesResponse);
+
+  rpc GrantNotePermission(GrantNotePermissionRequest) returns (GrantNotePermissionResponse);
+  rpc RevokeNotePermission(RevokeNotePermissionRequest) returns (RevokeNotePermissionResponse);
+  rpc ListNotePermissions(ListNotePermissionsRequest) returns (ListNotePermissionsResponse);
+
+  rpc CreateTeam(CreateTeamRequest) returns (CreateTeamResponse);
+  rpc GetTeam(GetTeamRequest) returns (GetTeamResponse);
+  rpc UpdateTeam(UpdateTeamRequest) returns (UpdateTeamResponse);
+  rpc DeleteTeam(DeleteTeamRequest) returns (DeleteTeamResponse);
+  rpc JoinTeam(JoinTeamRequest) returns (JoinTeamResponse);
+  rpc ExitTeam(ExitTeamRequest) returns (ExitTeamResponse);
+  rpc ListTeamMembers(ListTeamMembersRequest) returns (ListTeamMembersResponse);
+}

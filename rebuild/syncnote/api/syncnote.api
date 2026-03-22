@@ -1,0 +1,222 @@
+// syncnote.api
+// go-zero API 定义文件
+type (
+	// ============ 通用类型 ============
+	PaginationRequest {
+		Page     int32 `json:"page"`
+		PageSize int32 `json:"page_size"`
+	}
+	PaginationResponse {
+		Total    int32 `json:"total"`
+		Page     int32 `json:"page"`
+		PageSize int32 `json:"page_size"`
+		HasMore  bool  `json:"has_more"`
+	}
+	// ============ 核心类型 ============
+	Note {
+		NoteId    string `json:"note_id"`
+		OwnerId   string `json:"owner_id"`
+		Title     string `json:"title"`
+		Content   string `json:"content"`
+		Version   int32  `json:"version"`
+		CreatedAt string `json:"created_at"` // RFC3339 格式
+		UpdatedAt string `json:"updated_at"`
+	}
+	UserPermission {
+		PermissionId string `json:"permission_id"`
+		NoteId       string `json:"note_id"`
+		UserId       string `json:"user_id"`
+		Level        int32  `json:"level"` // 对应 PermissionLevel 枚举
+		GrantedBy    string `json:"granted_by"`
+		CreatedAt    string `json:"created_at"`
+	}
+	Team {
+		TeamId      string `json:"team_id"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+		OwnerId     string `json:"owner_id"`
+		CreatedAt   string `json:"created_at"`
+		UpdatedAt   string `json:"updated_at"`
+	}
+	TeamMember {
+		Id       string `json:"id"`
+		TeamId   string `json:"team_id"`
+		UserId   string `json:"user_id"`
+		Username string `json:"username"`
+		JoinedAt string `json:"joined_at"`
+	}
+	// ============ Note 服务请求/响应 ============
+	CreateNoteRequest {
+		Title   string `json:"title"`
+		Content string `json:"content"`
+	}
+	CreateNoteResponse {
+		Note Note `json:"note"`
+	}
+	GetNoteRequest {
+		NoteId string `path:"note_id"` // 路径参数
+	}
+	GetNoteResponse {
+		Note Note `json:"note"`
+	}
+	UpdateNoteRequest {
+		NoteId  string `path:"note_id"` // 路径参数
+		Title   string `json:"title"`
+		Content string `json:"content"`
+		Version int32  `json:"version"`
+	}
+	UpdateNoteResponse {
+		Note Note `json:"note"`
+	}
+	DeleteNoteRequest {
+		NoteId string `path:"note_id"` // 路径参数
+	}
+	DeleteNoteResponse {
+		Success bool `json:"success"`
+	}
+	ListNotesRequest {
+PaginationRequest `json:",inline"` // 内嵌分页
+				OwnerId string `json:"owner_id"`
+			}
+	ListNotesResponse {
+		Notes      []Note             `json:"notes"`
+		Pagination PaginationResponse `json:"pagination"`
+	}
+	// 权限相关
+	GrantNotePermissionRequest {
+		NoteId       string `path:"note_id"`
+		TargetUserId string `json:"target_user_id"`
+		Level        int32  `json:"level"`
+	}
+	GrantNotePermissionResponse {
+		Permission UserPermission `json:"permission"`
+	}
+	RevokeNotePermissionRequest {
+		NoteId       string `path:"note_id"`
+		TargetUserId string `path:"target_user_id"` // 路径参数
+	}
+	RevokeNotePermissionResponse {
+		Success bool `json:"success"`
+	}
+	ListNotePermissionsRequest {
+		NoteId string `path:"note_id"`
+	}
+	ListNotePermissionsResponse {
+		Permissions []UserPermission `json:"permissions"`
+	}
+	// ============ Team 服务请求/响应 ============
+	CreateTeamRequest {
+		Name        string `json:"name"`
+		Description string `json:"description"`
+	}
+	CreateTeamResponse {
+		Team Team `json:"team"`
+	}
+	GetTeamRequest {
+		TeamId string `path:"team_id"`
+	}
+	GetTeamResponse {
+		Team Team `json:"team"`
+	}
+	UpdateTeamRequest {
+		TeamId      string `path:"team_id"`
+		Name        string `json:"name"`
+		Description string `json:"description"`
+	}
+	UpdateTeamResponse {
+		Team Team `json:"team"`
+	}
+	DeleteTeamRequest {
+		TeamId string `path:"team_id"`
+	}
+	DeleteTeamResponse {
+		Success bool `json:"success"`
+	}
+	JoinTeamRequest {
+		TeamId string `path:"team_id"`
+	}
+	JoinTeamResponse {
+		Success bool `json:"success"`
+	}
+	ExitTeamRequest {
+		TeamId string `path:"team_id"`
+	}
+	ExitTeamResponse {
+		Success bool `json:"success"`
+	}
+	ListTeamMembersRequest {
+				TeamId string `path:"team_id"`
+PaginationRequest `json:",inline"`
+			}
+	ListTeamMembersResponse {
+		Members    []TeamMember       `json:"members"`
+		Pagination PaginationResponse `json:"pagination"`
+	}
+)
+
+// ============ 服务定义 ============
+service syncnote {
+	// Note 服务
+	@doc "创建笔记"
+	@handler CreateNote
+	post /api/v1/notes (CreateNoteRequest) returns (CreateNoteResponse)
+
+	@doc "获取笔记详情"
+	@handler GetNote
+	get /api/v1/notes/:note_id (GetNoteRequest) returns (GetNoteResponse)
+
+	@doc "更新笔记"
+	@handler UpdateNote
+	put /api/v1/notes/:note_id (UpdateNoteRequest) returns (UpdateNoteResponse)
+
+	@doc "删除笔记"
+	@handler DeleteNote
+	delete /api/v1/notes/:note_id (DeleteNoteRequest) returns (DeleteNoteResponse)
+
+	@doc "获取笔记列表"
+	@handler ListNotes
+	get /api/v1/notes (ListNotesRequest) returns (ListNotesResponse)
+
+	// 权限相关
+	@doc "授予笔记权限"
+	@handler GrantNotePermission
+	post /api/v1/notes/:note_id/permissions (GrantNotePermissionRequest) returns (GrantNotePermissionResponse)
+
+	@doc "撤销笔记权限"
+	@handler RevokeNotePermission
+	delete /api/v1/notes/:note_id/permissions/:target_user_id (RevokeNotePermissionRequest) returns (RevokeNotePermissionResponse)
+
+	@doc "获取笔记权限列表"
+	@handler ListNotePermissions
+	get /api/v1/notes/:note_id/permissions (ListNotePermissionsRequest) returns (ListNotePermissionsResponse)
+
+	// Team 服务
+	@doc "创建团队"
+	@handler CreateTeam
+	post /api/v1/teams (CreateTeamRequest) returns (CreateTeamResponse)
+
+	@doc "获取团队详情"
+	@handler GetTeam
+	get /api/v1/teams/:team_id (GetTeamRequest) returns (GetTeamResponse)
+
+	@doc "更新团队"
+	@handler UpdateTeam
+	put /api/v1/teams/:team_id (UpdateTeamRequest) returns (UpdateTeamResponse)
+
+	@doc "删除团队"
+	@handler DeleteTeam
+	delete /api/v1/teams/:team_id (DeleteTeamRequest) returns (DeleteTeamResponse)
+
+	@doc "加入团队"
+	@handler JoinTeam
+	post /api/v1/teams/:team_id/join (JoinTeamRequest) returns (JoinTeamResponse)
+
+	@doc "退出团队"
+	@handler ExitTeam
+	post /api/v1/teams/:team_id/exit (ExitTeamRequest) returns (ExitTeamResponse)
+
+	@doc "获取团队成员列表"
+	@handler ListTeamMembers
+	get /api/v1/teams/:team_id/members (ListTeamMembersRequest) returns (ListTeamMembersResponse)
+}
+
