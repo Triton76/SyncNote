@@ -14,19 +14,6 @@ enum PermissionLevel {
   PERMISSION_LEVEL_ADMIN       = 3;
 }
 
-// ============ 通用消息 ============
-message PaginationRequest {
-  int32 page      = 1;
-  int32 page_size = 2;
-}
-
-message PaginationResponse {
-  int32 total     = 1;
-  int32 page      = 2;
-  int32 page_size = 3;
-  bool  has_more  = 4;
-}
-
 // ============ 核心消息 ============
 message Note {
   string                    note_id    = 1;
@@ -101,16 +88,6 @@ message DeleteNoteResponse {
   bool success = 1;
 }
 
-message ListNotesRequest {
-  PaginationRequest pagination = 1;
-  string            owner_id   = 2;
-}
-
-message ListNotesResponse {
-  repeated Note      notes      = 1;
-  PaginationResponse pagination = 2;
-}
-
 // 权限相关
 message GrantNotePermissionRequest {
   string          note_id        = 1;
@@ -129,14 +106,6 @@ message RevokeNotePermissionRequest {
 
 message RevokeNotePermissionResponse {
   bool success = 1;
-}
-
-message ListNotePermissionsRequest {
-  string note_id = 1;
-}
-
-message ListNotePermissionsResponse {
-  repeated UserPermission permissions = 1;
 }
 
 // ============ Team 服务请求/响应 ============
@@ -191,27 +160,15 @@ message ExitTeamResponse {
   bool success = 1;
 }
 
-message ListTeamMembersRequest {
-  string            team_id    = 1;
-  PaginationRequest pagination = 2;
-}
-
-message ListTeamMembersResponse {
-  repeated TeamMember members    = 1;
-  PaginationResponse  pagination = 2;
-}
-
 // ============ 服务定义 ============
-service NoteService {
+service SyncnoteService {
   rpc CreateNote(CreateNoteRequest) returns (CreateNoteResponse);
   rpc GetNote(GetNoteRequest) returns (GetNoteResponse);
   rpc UpdateNote(UpdateNoteRequest) returns (UpdateNoteResponse);
   rpc DeleteNote(DeleteNoteRequest) returns (DeleteNoteResponse);
-  rpc ListNotes(ListNotesRequest) returns (ListNotesResponse);
 
   rpc GrantNotePermission(GrantNotePermissionRequest) returns (GrantNotePermissionResponse);
   rpc RevokeNotePermission(RevokeNotePermissionRequest) returns (RevokeNotePermissionResponse);
-  rpc ListNotePermissions(ListNotePermissionsRequest) returns (ListNotePermissionsResponse);
 
   rpc CreateTeam(CreateTeamRequest) returns (CreateTeamResponse);
   rpc GetTeam(GetTeamRequest) returns (GetTeamResponse);
@@ -219,5 +176,4 @@ service NoteService {
   rpc DeleteTeam(DeleteTeamRequest) returns (DeleteTeamResponse);
   rpc JoinTeam(JoinTeamRequest) returns (JoinTeamResponse);
   rpc ExitTeam(ExitTeamRequest) returns (ExitTeamResponse);
-  rpc ListTeamMembers(ListTeamMembersRequest) returns (ListTeamMembersResponse);
 }

@@ -1,18 +1,6 @@
 // syncnote.api
 // go-zero API 定义文件
 type (
-	// ============ 通用类型 ============
-	PaginationRequest {
-		Page     int32 `json:"page"`
-		PageSize int32 `json:"page_size"`
-	}
-	PaginationResponse {
-		Total    int32 `json:"total"`
-		Page     int32 `json:"page"`
-		PageSize int32 `json:"page_size"`
-		HasMore  bool  `json:"has_more"`
-	}
-	// ============ 核心类型 ============
 	Note {
 		NoteId    string `json:"note_id"`
 		OwnerId   string `json:"owner_id"`
@@ -74,14 +62,6 @@ type (
 	DeleteNoteResponse {
 		Success bool `json:"success"`
 	}
-	ListNotesRequest {
-PaginationRequest `json:",inline"` // 内嵌分页
-				OwnerId string `json:"owner_id"`
-			}
-	ListNotesResponse {
-		Notes      []Note             `json:"notes"`
-		Pagination PaginationResponse `json:"pagination"`
-	}
 	// 权限相关
 	GrantNotePermissionRequest {
 		NoteId       string `path:"note_id"`
@@ -97,12 +77,6 @@ PaginationRequest `json:",inline"` // 内嵌分页
 	}
 	RevokeNotePermissionResponse {
 		Success bool `json:"success"`
-	}
-	ListNotePermissionsRequest {
-		NoteId string `path:"note_id"`
-	}
-	ListNotePermissionsResponse {
-		Permissions []UserPermission `json:"permissions"`
 	}
 	// ============ Team 服务请求/响应 ============
 	CreateTeamRequest {
@@ -144,14 +118,6 @@ PaginationRequest `json:",inline"` // 内嵌分页
 	ExitTeamResponse {
 		Success bool `json:"success"`
 	}
-	ListTeamMembersRequest {
-				TeamId string `path:"team_id"`
-PaginationRequest `json:",inline"`
-			}
-	ListTeamMembersResponse {
-		Members    []TeamMember       `json:"members"`
-		Pagination PaginationResponse `json:"pagination"`
-	}
 )
 
 // ============ 服务定义 ============
@@ -173,10 +139,6 @@ service syncnote {
 	@handler DeleteNote
 	delete /api/v1/notes/:note_id (DeleteNoteRequest) returns (DeleteNoteResponse)
 
-	@doc "获取笔记列表"
-	@handler ListNotes
-	get /api/v1/notes (ListNotesRequest) returns (ListNotesResponse)
-
 	// 权限相关
 	@doc "授予笔记权限"
 	@handler GrantNotePermission
@@ -185,10 +147,6 @@ service syncnote {
 	@doc "撤销笔记权限"
 	@handler RevokeNotePermission
 	delete /api/v1/notes/:note_id/permissions/:target_user_id (RevokeNotePermissionRequest) returns (RevokeNotePermissionResponse)
-
-	@doc "获取笔记权限列表"
-	@handler ListNotePermissions
-	get /api/v1/notes/:note_id/permissions (ListNotePermissionsRequest) returns (ListNotePermissionsResponse)
 
 	// Team 服务
 	@doc "创建团队"
@@ -214,9 +172,5 @@ service syncnote {
 	@doc "退出团队"
 	@handler ExitTeam
 	post /api/v1/teams/:team_id/exit (ExitTeamRequest) returns (ExitTeamResponse)
-
-	@doc "获取团队成员列表"
-	@handler ListTeamMembers
-	get /api/v1/teams/:team_id/members (ListTeamMembersRequest) returns (ListTeamMembersResponse)
 }
 

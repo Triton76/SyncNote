@@ -21,12 +21,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Handler: CreateNoteHandler(serverCtx),
 			},
 			{
-				// 获取笔记列表
-				Method:  http.MethodGet,
-				Path:    "/api/v1/notes",
-				Handler: ListNotesHandler(serverCtx),
-			},
-			{
 				// 获取笔记详情
 				Method:  http.MethodGet,
 				Path:    "/api/v1/notes/:note_id",
@@ -49,12 +43,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/api/v1/notes/:note_id/permissions",
 				Handler: GrantNotePermissionHandler(serverCtx),
-			},
-			{
-				// 获取笔记权限列表
-				Method:  http.MethodGet,
-				Path:    "/api/v1/notes/:note_id/permissions",
-				Handler: ListNotePermissionsHandler(serverCtx),
 			},
 			{
 				// 撤销笔记权限
@@ -97,12 +85,6 @@ func RegisterHandlers(server *rest.Server, serverCtx *svc.ServiceContext) {
 				Method:  http.MethodPost,
 				Path:    "/api/v1/teams/:team_id/join",
 				Handler: JoinTeamHandler(serverCtx),
-			},
-			{
-				// 获取团队成员列表
-				Method:  http.MethodGet,
-				Path:    "/api/v1/teams/:team_id/members",
-				Handler: ListTeamMembersHandler(serverCtx),
 			},
 		},
 	)

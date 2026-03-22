@@ -79,34 +79,6 @@ type JoinTeamResponse struct {
 	Success bool `json:"success"`
 }
 
-type ListNotePermissionsRequest struct {
-	NoteId string `path:"note_id"`
-}
-
-type ListNotePermissionsResponse struct {
-	Permissions []UserPermission `json:"permissions"`
-}
-
-type ListNotesRequest struct {
-	PaginationRequest
-	OwnerId string `json:"owner_id"`
-}
-
-type ListNotesResponse struct {
-	Notes      []Note             `json:"notes"`
-	Pagination PaginationResponse `json:"pagination"`
-}
-
-type ListTeamMembersRequest struct {
-	TeamId string `path:"team_id"`
-	PaginationRequest
-}
-
-type ListTeamMembersResponse struct {
-	Members    []TeamMember       `json:"members"`
-	Pagination PaginationResponse `json:"pagination"`
-}
-
 type Note struct {
 	NoteId    string `json:"note_id"`
 	OwnerId   string `json:"owner_id"`
@@ -115,18 +87,6 @@ type Note struct {
 	Version   int32  `json:"version"`
 	CreatedAt string `json:"created_at"` // RFC3339 格式
 	UpdatedAt string `json:"updated_at"`
-}
-
-type PaginationRequest struct {
-	Page     int32 `json:"page"`
-	PageSize int32 `json:"page_size"`
-}
-
-type PaginationResponse struct {
-	Total    int32 `json:"total"`
-	Page     int32 `json:"page"`
-	PageSize int32 `json:"page_size"`
-	HasMore  bool  `json:"has_more"`
 }
 
 type RevokeNotePermissionRequest struct {
