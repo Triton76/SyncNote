@@ -14,6 +14,14 @@ echo "📦 下载 Go 模块依赖..."
 cd /workspaces/SyncNote
 go mod download
 
+# 1.2 安装前端依赖（如果 Vue 项目已创建）
+if [ -f /workspaces/SyncNote/frontend/vue-app/package.json ] && command -v npm >/dev/null 2>&1; then
+    echo "🌐 安装 Vue 前端依赖..."
+    cd /workspaces/SyncNote/frontend/vue-app
+    npm install
+    cd /workspaces/SyncNote
+fi
+
 # 1.1 启动本地依赖服务（优先复用仓库内 docker-compose）
 if command -v docker >/dev/null 2>&1 && [ -f /workspaces/SyncNote/docker-compose.yml ]; then
     echo "🐳 启动依赖容器 (etcd/redis/mysql)..."

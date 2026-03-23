@@ -5,7 +5,7 @@ import (
 	"database/sql"
 
 	"SyncNote/rebuild/common/model"
-	"SyncNote/rebuild/syncnote/rpc/internal/middleware"
+	"SyncNote/rebuild/pkg/middleware"
 	"SyncNote/rebuild/syncnote/rpc/internal/svc"
 	"SyncNote/rebuild/syncnote/rpc/pb/syncnoterpc"
 

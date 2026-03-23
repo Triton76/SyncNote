@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 
+	"SyncNote/rebuild/pkg/middleware"
 	"SyncNote/rebuild/syncnote/rpc/internal/config"
 	"SyncNote/rebuild/syncnote/rpc/internal/server"
 	"SyncNote/rebuild/syncnote/rpc/internal/svc"
@@ -33,6 +34,8 @@ func main() {
 		}
 	})
 	defer s.Stop()
+
+	s.AddUnaryInterceptors(middleware.AuthInterceptor())
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)
 	s.Start()

@@ -3,7 +3,10 @@ Host: 0.0.0.0
 Port: 8001
 Cors: "*"
 SyncnoteRpc:
-	Etcd:
-		Hosts:
-			- 127.0.0.1:2379
-		Key: syncnote.rpc
+  Etcd:
+    Hosts:
+      - 127.0.0.1:2379
+    Key: syncnote.rpc
+Auth:
+  AccessSecret: syncnote-secret-key-change-me-in-prod-8888
+  AccessExpire: 86400

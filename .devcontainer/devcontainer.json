@@ -9,7 +9,14 @@
   
   // 🔌 端口转发
   "forwardPorts": [
+  5173,
+	8000,
+	8001,
+	8002,
+	8003,
+	8004,
     8888,
+    2379,
     3306,
     6379
   ],
@@ -29,6 +36,7 @@
       "extensions": [
         "golang.go",
         "ms-azuretools.vscode-docker",
+        "Vue.volar",
         "zxh404.vscode-proto3",
         "mtxr.sqltools",
         "esbenp.prettier-vscode",
@@ -67,5 +75,5 @@
   "remoteUser": "vscode",
   
   // 🔄 容器启动后执行的命令（可选）
-  "postStartCommand": "echo '✅ SyncNote 开发环境已就绪！'"
+  "postStartCommand": "bash .devcontainer/post-start.sh"
 }

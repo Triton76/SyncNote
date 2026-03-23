@@ -120,6 +120,9 @@ type (
 	}
 )
 
+@server (
+	jwt: Auth
+)
 // ============ 服务定义 ============
 service syncnote {
 	// Note 服务

@@ -2,6 +2,7 @@ package logic
 
 import (
 	"context"
+	"time"
 
 	"SyncNote/rebuild/common/model"
 	"SyncNote/rebuild/pkg/middleware"
@@ -59,9 +60,10 @@ func (l *JoinTeamLogic) JoinTeam(in *syncnoterpc.JoinTeamRequest) (*syncnoterpc.
 
 	// 添加成员
 	member := &model.TeamMembers{
-		Id:     uuid.NewString(),
-		TeamId: in.GetTeamId(),
-		UserId: userId,
+		Id:       uuid.NewString(),
+		TeamId:   in.GetTeamId(),
+		UserId:   userId,
+		JoinedAt: time.Now(),
 	}
 	_, err = l.svcCtx.TeamMembersModel.Insert(l.ctx, member)
 	if err != nil {

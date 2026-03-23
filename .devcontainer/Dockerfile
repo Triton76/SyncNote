@@ -10,6 +10,8 @@ ENV PATH=$GOPATH/bin:/usr/local/go/bin:$PATH
 USER root
 RUN apt-get update && apt-get install -y \
     default-mysql-client \
+    nodejs \
+    npm \
     git \
     curl \
     wget \
