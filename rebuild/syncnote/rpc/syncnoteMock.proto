@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package syncnoterpc;
-
-option go_package = "./syncnoterpc";
-
-import "google/protobuf/timestamp.proto";

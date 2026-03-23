@@ -1,8 +1,13 @@
 package model
 
-import "github.com/zeromicro/go-zero/core/stores/sqlx"
+import (
+	"errors"
+
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
+)
 
 var ErrNotFound = sqlx.ErrNotFound
+var ErrOptimisticLockFailed = errors.New("optimistic lock failed")
 
 // 权限级别常量
 const (

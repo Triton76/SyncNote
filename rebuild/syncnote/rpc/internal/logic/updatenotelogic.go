@@ -3,6 +3,7 @@ package logic
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"SyncNote/rebuild/common/model"
 	"SyncNote/rebuild/pkg/middleware"
@@ -30,8 +31,14 @@ func NewUpdateNoteLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Update
 
 func (l *UpdateNoteLogic) UpdateNote(in *syncnoterpc.UpdateNoteRequest) (*syncnoterpc.UpdateNoteResponse, error) {
 	// 更新笔记：owner 或有写权限以上的用户可更新。
+	// 乐观锁实现：当传递的Version低于最新Version，拒绝，当传递的Version等于当前数据库中的Version，同意并version+1
+	// 为什么不用悲观锁？ 悲观锁事务开销大，要求将查询笔记、鉴权更新等步骤包裹在一个事务中，其中某个步骤耗时数据库就容易被占用。这时候还有一个性能问题，万一一个多人协作的笔记一人阻塞，导致后面所有人都无法进行编辑。
+	//
 	if in.GetNoteId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "note_id is required")
+	}
+	if in.GetVersion() <= 0 {
+		return nil, status.Error(codes.InvalidArgument, "version is required")
 	}
 
 	operatorID, err := middleware.GetUserFromContext(l.ctx)
@@ -61,19 +68,26 @@ func (l *UpdateNoteLogic) UpdateNote(in *syncnoterpc.UpdateNoteRequest) (*syncno
 	// 更新笔记
 	note.Title = in.GetTitle()
 	note.Content = sql.NullString{String: in.GetContent(), Valid: in.GetContent() != ""}
-	note.Version = int64(in.GetVersion())
 
-	err = l.svcCtx.NoteModel.Update(l.ctx, note)
+	err = l.svcCtx.NoteModel.UpdateWithVersion(l.ctx, note, int64(in.GetVersion()))
+	if err != nil {
+		if errors.Is(err, model.ErrOptimisticLockFailed) {
+			return nil, status.Error(codes.Aborted, "version conflict")
+		}
+		return nil, err
+	}
+
+	latest, err := l.svcCtx.NoteModel.FindOne(l.ctx, in.GetNoteId())
 	if err != nil {
 		return nil, err
 	}
 
 	return &syncnoterpc.UpdateNoteResponse{Note: &syncnoterpc.Note{
-		NoteId:  note.NoteId,
-		OwnerId: note.OwnerId,
-		Title:   note.Title,
-		Content: note.Content.String,
-		Version: int32(note.Version),
+		NoteId:  latest.NoteId,
+		OwnerId: latest.OwnerId,
+		Title:   latest.Title,
+		Content: latest.Content.String,
+		Version: int32(latest.Version),
 	}}, nil
 }
 
